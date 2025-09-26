@@ -1,11 +1,15 @@
 import React from 'react';
 
 const App: React.FC = () => {
+  // Add a test variable to trigger linting
+  const testMessage = 'Application is working!';
+  
   return (
     <div className="app">
       <header className="app-header">
         <h1>InSpace Desktop</h1>
         <p>Welcome to your Electron + React + TypeScript + SCSS application!</p>
+        <p>{testMessage}</p>
       </header>
       <main className="app-main">
         <div className="feature-card">

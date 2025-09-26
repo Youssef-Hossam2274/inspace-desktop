@@ -1,13 +1,18 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const webpack = require('webpack');
 
 module.exports = {
   mode: 'development',
   entry: './src/renderer/index.tsx',
-  target: 'electron-renderer',
+  target: 'web',
   devtool: 'source-map',
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
+    fallback: {
+      "path": false,
+      "fs": false
+    }
   },
   module: {
     rules: [
@@ -42,6 +47,9 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: './public/index.html'
+    }),
+    new webpack.DefinePlugin({
+      'global': 'globalThis',
     })
   ],
   devServer: {
