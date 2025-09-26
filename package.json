@@ -27,7 +27,7 @@
     "scss",
     "desktop-app"
   ],
-  "author": "",
+  "author": "InSpace Desktop Team",
   "license": "ISC",
   "dependencies": {
     "react": "^18.3.1",
