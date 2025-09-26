@@ -1,12 +1,56 @@
 @use "sass:color";
 
-// Variables
-$primary-color: #007acc;
-$secondary-color: #f0f0f0;
-$text-color: #333;
-$bg-color: #ffffff;
-$border-radius: 8px;
-$box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+// Import our design system modules
+@use "colors" as *;
+@use "typography" as *;
+@use "utils" as *;
+
+// CSS Custom Properties for theme values
+:root {
+  // Colors
+  --primary-color: #{$primary-color};
+  --primary-color-light: #{$primary-color-light};
+  --primary-color-dark: #{$primary-color-dark};
+  --primary-color-alpha: #{$primary-color-alpha};
+  
+  --secondary-color: #{$secondary-color};
+  --secondary-color-light: #{$secondary-color-light};
+  --secondary-color-dark: #{$secondary-color-dark};
+  
+  --bg-primary: #{$bg-primary};
+  --bg-secondary: #{$bg-secondary};
+  --bg-tertiary: #{$bg-tertiary};
+  --bg-quaternary: #{$bg-quaternary};
+  
+  --text-primary: #{$text-primary};
+  --text-secondary: #{$text-secondary};
+  --text-tertiary: #{$text-tertiary};
+  --text-muted: #{$text-muted};
+  --text-inverse: #{$text-inverse};
+  
+  --border-primary: #{$border-primary};
+  --border-secondary: #{$border-secondary};
+  --border-tertiary: #{$border-tertiary};
+  --border-focus: #{$border-focus};
+  
+  --success-color: #{$success-color};
+  --success-color-bg: #{$success-color-bg};
+  --warning-color: #{$warning-color};
+  --warning-color-bg: #{$warning-color-bg};
+  --error-color: #{$error-color};
+  --error-color-bg: #{$error-color-bg};
+  --info-color: #{$info-color};
+  --info-color-bg: #{$info-color-bg};
+  
+  --hover-overlay: #{$hover-overlay};
+  --active-overlay: #{$active-overlay};
+  --focus-ring: #{$focus-ring};
+  
+  --shadow-sm: #{$shadow-sm};
+  --shadow-md: #{$shadow-md};
+  --shadow-lg: #{$shadow-lg};
+  --shadow-xl: #{$shadow-xl};
+}
 
 // Reset and base styles
 * {
@@ -17,13 +61,12 @@ $box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: $font-family-primary;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: $bg-color;
-  color: $text-color;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  @include custom-scrollbar;
 }
 
 // App component styles
@@ -33,59 +76,55 @@ body {
   flex-direction: column;
 
   &-header {
-    background: linear-gradient(135deg, $primary-color, color.adjust($primary-color, $lightness: 10%));
-    color: white;
-    padding: 2rem;
+    background: $gradient-primary;
+    color: var(--text-inverse);
+    padding: spacing(8);
     text-align: center;
-    box-shadow: $box-shadow;
+    box-shadow: var(--shadow-lg);
 
     h1 {
-      font-size: 2.5rem;
-      margin-bottom: 0.5rem;
-      font-weight: 600;
+      @include responsive-heading-1;
+      margin-bottom: spacing(2);
+      font-weight: $font-weight-bold;
     }
 
     p {
-      font-size: 1.1rem;
+      @include text-large;
       opacity: 0.9;
     }
   }
 
   &-main {
     flex: 1;
-    padding: 2rem;
-    display: flex;
-    justify-content: center;
+    padding: spacing(8);
+    @include flex-center;
     align-items: flex-start;
   }
 }
 
 // Feature card styles
 .feature-card {
-  background: white;
-  border-radius: $border-radius;
-  box-shadow: $box-shadow;
-  padding: 2rem;
+  @include card-interactive;
   max-width: 500px;
   width: 100%;
 
   h2 {
-    color: $primary-color;
-    margin-bottom: 1rem;
-    font-size: 1.5rem;
+    @include heading-3;
+    color: var(--primary-color);
+    margin-bottom: spacing(4);
   }
 
   ul {
     list-style: none;
     
     li {
-      padding: 0.5rem 0;
-      font-size: 1.1rem;
+      padding: spacing(2) 0;
+      @include text-normal;
+      @include transition(all, 0.3s, ease);
       
       &:hover {
-        color: $primary-color;
-        transform: translateX(5px);
-        transition: all 0.3s ease;
+        color: var(--primary-color);
+        transform: translateX(spacing(2));
       }
     }
   }
