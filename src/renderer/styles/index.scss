@@ -73,24 +73,71 @@ body {
 .app {
   min-height: 100vh;
   display: flex;
-  flex-direction: column;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+
+  // Main content area
+  &-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0; // Prevent flex item overflow
+    @include transition(margin-left, 0.3s, cubic-bezier(0.4, 0, 0.2, 1));
+
+    // Desktop layout with sidebar
+    @include media-up(lg) {
+      margin-left: 64px; // Closed sidebar width
+
+      &--sidebar-open {
+        margin-left: 280px; // Open sidebar width
+      }
+    }
+  }
 
   &-header {
     background: $gradient-primary;
     color: var(--text-inverse);
-    padding: spacing(8);
-    text-align: center;
-    box-shadow: var(--shadow-lg);
+    padding: spacing(6) spacing(8);
+    box-shadow: var(--shadow-md);
+    position: relative;
 
-    h1 {
-      @include responsive-heading-1;
-      margin-bottom: spacing(2);
-      font-weight: $font-weight-bold;
+    &__controls {
+      @include flex-between;
+      align-items: center;
+      margin-bottom: spacing(4);
+
+      h1 {
+        @include responsive-heading-2;
+        font-weight: $font-weight-bold;
+        margin: 0;
+      }
+    }
+
+    &__menu-toggle {
+      @include button-base;
+      background: rgba(255, 255, 255, 0.1);
+      color: inherit;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: spacing(2);
+      width: 40px;
+      height: 40px;
+      font-size: $font-size-lg;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+
+      // Hide on desktop since sidebar has its own toggle
+      @include media-up(lg) {
+        display: none;
+      }
     }
 
     p {
       @include text-large;
       opacity: 0.9;
+      margin: 0;
+      text-align: center;
     }
   }
 
@@ -99,6 +146,7 @@ body {
     padding: spacing(8);
     @include flex-center;
     align-items: flex-start;
+    overflow-y: auto;
   }
 }
 
