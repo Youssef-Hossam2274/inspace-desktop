@@ -1,16 +1,16 @@
 // Dark Theme Color Variables
-// Inspired by Claude's dark interface with professional aesthetics
+// Professional gray-blue theme with sophisticated aesthetics
 
 // Primary Colors
-$primary-color: #ff6b35;           // Orange accent (similar to Claude's brand color)
-$primary-color-light: #ff8559;    // Lighter variant
-$primary-color-dark: #e55a2b;     // Darker variant
-$primary-color-alpha: rgba(255, 107, 53, 0.1); // Transparent variant
+$primary-color: #6b7db5;           // Gray-blue accent color
+$primary-color-light: #8591c7;    // Lighter variant
+$primary-color-dark: #5a6a9e;     // Darker variant
+$primary-color-alpha: rgba(107, 125, 181, 0.1); // Transparent variant
 
 // Secondary Colors
-$secondary-color: #6c7293;        // Muted blue-gray
-$secondary-color-light: #8b8fab;  // Lighter variant
-$secondary-color-dark: #5a5d75;   // Darker variant
+$secondary-color: #7a8396;        // Muted gray-blue
+$secondary-color-light: #9099a8;  // Lighter variant
+$secondary-color-dark: #686e7d;   // Darker variant
 
 // Background Colors
 $bg-primary: #1a1a1a;            // Main dark background
@@ -44,7 +44,7 @@ $info-color-bg: rgba(59, 130, 246, 0.1);
 // Interactive Colors
 $hover-overlay: rgba(255, 255, 255, 0.05);
 $active-overlay: rgba(255, 255, 255, 0.1);
-$focus-ring: rgba(255, 107, 53, 0.3);
+$focus-ring: rgba(107, 125, 181, 0.3);
 
 // Shadow Colors
 $shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
