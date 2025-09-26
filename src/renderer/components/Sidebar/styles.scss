@@ -47,23 +47,23 @@ $sidebar-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
   @include transition(width, $sidebar-transition-duration, $sidebar-transition-easing);
   @include custom-scrollbar;
 
-  // Open/closed states
-  &--open {
-    width: $sidebar-width-open;
-  }
-
-  &--closed {
-    width: $sidebar-width-closed;
-  }
-
   // Mobile responsive
   @include media-down(lg) {
     transform: translateX(-100%);
     @include transition(transform, $sidebar-transition-duration, $sidebar-transition-easing);
+  }
 
-    &--open {
+  // Open/closed states
+  &--open {
+    width: $sidebar-width-open;
+
+    @include media-down(lg) {
       transform: translateX(0);
     }
+  }
+
+  &--closed {
+    width: $sidebar-width-closed;
   }
 
   // Header section
@@ -281,53 +281,53 @@ $sidebar-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
     text-overflow: ellipsis;
   }
-}
 
-// Tooltip for closed sidebar
-.sidebar--closed {
-  .sidebar__menu-link {
-    position: relative;
+  // Tooltip for closed sidebar
+  &--closed {
+    .sidebar__menu-link {
+      position: relative;
 
-    &:hover::after {
-      content: attr(title);
-      position: absolute;
-      left: calc(100% + spacing(2));
-      top: 50%;
-      transform: translateY(-50%);
-      background: $bg-quaternary;
-      color: $text-primary;
-      padding: spacing(2) spacing(3);
-      border-radius: radius(md);
-      white-space: nowrap;
-      font-size: $font-size-sm;
-      z-index: z(tooltip);
-      border: 1px solid $border-primary;
-      box-shadow: $shadow-lg;
-      opacity: 0;
-      animation: tooltip-show 0.2s ease-out 0.5s forwards;
+      &:hover::after {
+        content: attr(title);
+        position: absolute;
+        left: calc(100% + spacing(2));
+        top: 50%;
+        transform: translateY(-50%);
+        background: $bg-quaternary;
+        color: $text-primary;
+        padding: spacing(2) spacing(3);
+        border-radius: radius(md);
+        white-space: nowrap;
+        font-size: $font-size-sm;
+        z-index: z(tooltip);
+        border: 1px solid $border-primary;
+        box-shadow: $shadow-lg;
+        opacity: 0;
+        animation: tooltip-show 0.2s ease-out 0.5s forwards;
 
-      @include media-down(lg) {
-        display: none;
+        @include media-down(lg) {
+          display: none;
+        }
       }
-    }
 
-    &:hover::before {
-      content: '';
-      position: absolute;
-      left: calc(100% + spacing(1));
-      top: 50%;
-      transform: translateY(-50%);
-      width: 0;
-      height: 0;
-      border-style: solid;
-      border-width: 4px 4px 4px 0;
-      border-color: transparent $border-primary transparent transparent;
-      z-index: z(tooltip);
-      opacity: 0;
-      animation: tooltip-show 0.2s ease-out 0.5s forwards;
+      &:hover::before {
+        content: '';
+        position: absolute;
+        left: calc(100% + spacing(1));
+        top: 50%;
+        transform: translateY(-50%);
+        width: 0;
+        height: 0;
+        border-style: solid;
+        border-width: 4px 4px 4px 0;
+        border-color: transparent $border-primary transparent transparent;
+        z-index: z(tooltip);
+        opacity: 0;
+        animation: tooltip-show 0.2s ease-out 0.5s forwards;
 
-      @include media-down(lg) {
-        display: none;
+        @include media-down(lg) {
+          display: none;
+        }
       }
     }
   }

@@ -1,18 +1,36 @@
-import React from 'react';
-import './Sidebar.scss';
+import React, { useState, createContext, useContext } from 'react';
+import { SidebarProps, MenuItem } from './types';
+import './styles.scss';
 
-interface SidebarProps {
+// Context for sidebar state
+interface SidebarContextType {
   isOpen: boolean;
-  onToggle: () => void;
+  toggleSidebar: () => void;
 }
 
-interface MenuItem {
-  id: string;
-  label: string;
-  icon: string;
-  href?: string;
-  onClick?: () => void;
-}
+const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
+
+export const useSidebar = () => {
+  const context = useContext(SidebarContext);
+  if (!context) {
+    throw new Error('useSidebar must be used within a SidebarProvider');
+  }
+  return context;
+};
+
+export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsOpen(!isOpen);
+  };
+
+  return (
+    <SidebarContext.Provider value={{ isOpen, toggleSidebar }}>
+      {children}
+    </SidebarContext.Provider>
+  );
+};
 
 const menuItems: MenuItem[] = [
   { id: 'new-chat', label: 'New Chat', icon: '💬', onClick: () => console.log('New Chat') },
@@ -22,14 +40,16 @@ const menuItems: MenuItem[] = [
   { id: 'help', label: 'Help & Support', icon: '❓', onClick: () => console.log('Help') },
 ];
 
-const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
+const Sidebar: React.FC<SidebarProps> = ({ className }) => {
+  const { isOpen, toggleSidebar } = useSidebar();
+
   return (
     <>
       {/* Overlay for mobile */}
-      {isOpen && <div className="sidebar-overlay" onClick={onToggle} />}
+      {isOpen && <div className="sidebar-overlay" onClick={toggleSidebar} />}
       
       {/* Sidebar */}
-      <aside className={`sidebar ${isOpen ? 'sidebar--open' : 'sidebar--closed'}`}>
+      <aside className={`sidebar ${isOpen ? 'sidebar--open' : 'sidebar--closed'} ${className || ''}`}>
         {/* Header */}
         <div className="sidebar__header">
           <div className="sidebar__logo">
@@ -38,7 +58,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
           </div>
           <button
             className="sidebar__toggle"
-            onClick={onToggle}
+            onClick={toggleSidebar}
             aria-label={isOpen ? 'Close sidebar' : 'Open sidebar'}
           >
             <span className="sidebar__toggle-icon">
