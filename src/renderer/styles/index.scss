@@ -71,26 +71,30 @@ body {
 
 // App component styles
 .app {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-
   &-header {
     background: $gradient-primary;
     color: var(--text-inverse);
-    padding: spacing(8);
-    text-align: center;
-    box-shadow: var(--shadow-lg);
+    padding: spacing(6) spacing(8);
+    box-shadow: var(--shadow-md);
+    position: relative;
 
-    h1 {
-      @include responsive-heading-1;
-      margin-bottom: spacing(2);
-      font-weight: $font-weight-bold;
+    &__controls {
+      @include flex-between;
+      align-items: center;
+      margin-bottom: spacing(4);
+
+      h1 {
+        @include responsive-heading-2;
+        font-weight: $font-weight-bold;
+        margin: 0;
+      }
     }
 
     p {
       @include text-large;
       opacity: 0.9;
+      margin: 0;
+      text-align: center;
     }
   }
 
@@ -99,6 +103,7 @@ body {
     padding: spacing(8);
     @include flex-center;
     align-items: flex-start;
+    overflow-y: auto;
   }
 }
 
