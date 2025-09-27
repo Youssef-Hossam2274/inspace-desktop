@@ -1,0 +1,226 @@
+.chatInputContainer {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: spacing(4);
+}
+
+.inputWrapper {
+    display: flex;
+
+    background: $bg-secondary;
+    border: 1px solid $border-secondary;
+    border-radius: radius(xl);
+    @include transition(all, 0.2s, ease-out);
+    overflow: hidden;
+    gap: spacing(3);
+    box-shadow: $shadow-sm;
+
+    padding: spacing(4) spacing(6);
+
+    &.focused {
+        border-color: $primary-color;
+        box-shadow: 0 0 0 3px $focus-ring;
+    }
+
+    &:hover:not(.focused) {
+        border-color: $border-primary;
+        background: $bg-tertiary;
+    }
+}
+
+.textareaContainer {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+}
+
+.textarea {
+    width: 100%;
+    min-height: 24px;
+    max-height: 200px;
+    background: transparent;
+    border: none;
+    outline: none;
+    resize: none;
+    font-family: $font-family-primary;
+    font-size: $font-size-base;
+    font-weight: $font-weight-normal;
+    line-height: $line-height-relaxed;
+    color: $text-primary;
+
+    &::placeholder {
+        color: $text-tertiary;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    // Custom scrollbar
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: $border-primary;
+        border-radius: radius(full);
+
+        &:hover {
+            background: $text-tertiary;
+        }
+    }
+}
+
+.characterCount {
+    display: flex;
+    justify-content: end;
+    font-size: $font-size-xs;
+    color: $text-muted;
+    pointer-events: none;
+    background-color: transparent;
+    padding: spacing(1) spacing(2);
+}
+
+.actionsContainer {
+    @include flex-center;
+    align-items: end
+}
+
+.sendButton {
+    @include flex-center;
+    width: 36px;
+    height: 36px;
+    background: $bg-tertiary;
+    border: 1px solid $border-secondary;
+    border-radius: radius(lg);
+    color: $text-tertiary;
+    cursor: pointer;
+    @include transition(all, 0.2s, ease-out);
+
+    &:hover:not(:disabled) {
+        background: $bg-quaternary;
+        border-color: $border-primary;
+        color: $text-secondary;
+        transform: scale(1.05);
+    }
+
+    &:active:not(:disabled) {
+        transform: scale(0.95);
+    }
+
+    &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+
+    svg {
+        @include transition(transform, 0.2s, ease-out);
+    }
+}
+
+.sendButtonActive {
+    background: $primary-color;
+    border-color: $primary-color;
+    color: white;
+
+    &:hover:not(:disabled) {
+        background: $primary-color-dark;
+        border-color: $primary-color-dark;
+        color: white;
+    }
+
+    svg {
+        transform: translateX(1px);
+    }
+}
+
+.hints {
+    margin-top: spacing(2);
+    @include flex-center;
+    justify-content: center;
+}
+
+.hint {
+    font-size: $font-size-xs;
+    color: $text-muted;
+    font-weight: $font-weight-normal;
+}
+
+// Responsive Design
+@include media-down(md) {
+    .chatInputContainer {
+        padding: spacing(3);
+    }
+
+    .inputWrapper {
+        padding: spacing(3) spacing(4);
+    }
+
+    .sendButton {
+        width: 32px;
+        height: 32px;
+
+        svg {
+            width: 14px;
+            height: 14px;
+        }
+    }
+
+    .characterCount {
+        right: spacing(14);
+        font-size: 10px;
+    }
+}
+
+@include media-down(sm) {
+    .chatInputContainer {
+        padding: spacing(2);
+    }
+
+    .inputWrapper {
+        border-radius: radius(lg);
+    }
+
+    .hints {
+        margin-top: spacing(1);
+    }
+
+    .hint {
+        font-size: 10px;
+    }
+}
+
+// Dark mode adjustments (if needed in the future)
+@media (prefers-color-scheme: dark) {
+    .textarea {
+        color-scheme: dark;
+    }
+}
+
+// Animation for sending state
+.inputWrapper.sending {
+    .sendButton {
+        animation: pulse 1s infinite;
+    }
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.05);
+        opacity: 0.8;
+    }
+}
