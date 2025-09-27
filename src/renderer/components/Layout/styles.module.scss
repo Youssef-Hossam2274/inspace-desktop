@@ -1,12 +1,9 @@
-@use '../../styles/colors' as *;
-@use '../../styles/typography' as *;
-@use '../../styles/utils' as *;
 
 .layout {
   min-height: 100vh;
   display: flex;
-  background: var(--bg-primary);
-  color: var(--text-primary);
+  background: $bg-primary;
+  color: $text-primary;
 }
 
 .layoutContent {

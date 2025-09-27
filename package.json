@@ -8,7 +8,7 @@
   "scripts": {
     "build:main": "tsc -p tsconfig.main.json",
     "build:renderer": "vite build",
-    "build:preload": "tsc src/preload/preload.ts --outDir dist/preload --target ES2020 --module commonjs",
+    "build:preload": "tsc src/preload/preload.ts --outDir dist/preload --target ES2020 --module ES2020 --moduleResolution node",
     "build": "npm run build:main && npm run build:preload && npm run build:renderer",
     "start:renderer": "vite",
     "start:main": "cross-env NODE_ENV=development electron .",

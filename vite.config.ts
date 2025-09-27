@@ -24,7 +24,7 @@ export default defineConfig({
     },
     preprocessorOptions: {
       scss: {
-        additionalData: `@use "${resolve(__dirname, 'src/renderer/styles/colors.scss')}" as *; @use "${resolve(__dirname, 'src/renderer/styles/utils.scss')}" as *; @use "${resolve(__dirname, 'src/renderer/styles/typography.scss')}" as *;`,
+        additionalData: `@use "@/styles/_colors" as *; @use "@/styles/_utils" as *; @use "@/styles/_typography" as *;`,
       },
     },
   },
