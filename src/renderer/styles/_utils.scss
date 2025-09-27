@@ -3,7 +3,7 @@
 
 @use "sass:map";
 @use "sass:list";
-@use "typography" as *;
+@use "typography.scss" as *;
 
 // Breakpoints
 $breakpoints: (
