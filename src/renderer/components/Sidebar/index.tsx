@@ -1,6 +1,6 @@
 import React, { useState, createContext, useContext } from 'react';
 import { SidebarProps, MenuItem } from './types';
-import './styles.scss';
+import styles from './styles.module.scss';
 
 // Context for sidebar state
 interface SidebarContextType {
@@ -46,39 +46,39 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
   return (
     <>
       {/* Overlay for mobile */}
-      {isOpen && <div className="sidebar-overlay" onClick={toggleSidebar} />}
+      {isOpen && <div className={styles.sidebarOverlay} onClick={toggleSidebar} />}
       
       {/* Sidebar */}
-      <aside className={`sidebar ${isOpen ? 'sidebar--open' : 'sidebar--closed'} ${className || ''}`}>
+      <aside className={`${styles.sidebar} ${isOpen ? styles.sidebarOpen : styles.sidebarClosed} ${className || ''}`}>
         {/* Header */}
-        <div className="sidebar__header">
-          <div className="sidebar__logo">
-            <span className="sidebar__logo-icon">🚀</span>
-            {isOpen && <span className="sidebar__logo-text">InSpace</span>}
+        <div className={styles.sidebarHeader}>
+          <div className={styles.sidebarLogo}>
+            <span className={styles.sidebarLogoIcon}>🚀</span>
+            {isOpen && <span className={styles.sidebarLogoText}>InSpace</span>}
           </div>
           <button
-            className="sidebar__toggle"
+            className={styles.sidebarToggle}
             onClick={toggleSidebar}
             aria-label={isOpen ? 'Close sidebar' : 'Open sidebar'}
           >
-            <span className="sidebar__toggle-icon">
+            <span className={styles.sidebarToggleIcon}>
               {isOpen ? '←' : '→'}
             </span>
           </button>
         </div>
 
         {/* Navigation */}
-        <nav className="sidebar__nav">
-          <ul className="sidebar__menu">
+        <nav className={styles.sidebarNav}>
+          <ul className={styles.sidebarMenu}>
             {menuItems.map((item) => (
-              <li key={item.id} className="sidebar__menu-item">
+              <li key={item.id} className={styles.sidebarMenuItem}>
                 <button
-                  className="sidebar__menu-link"
+                  className={styles.sidebarMenuLink}
                   onClick={item.onClick}
                   title={!isOpen ? item.label : undefined}
                 >
-                  <span className="sidebar__menu-icon">{item.icon}</span>
-                  {isOpen && <span className="sidebar__menu-text">{item.label}</span>}
+                  <span className={styles.sidebarMenuIcon}>{item.icon}</span>
+                  {isOpen && <span className={styles.sidebarMenuText}>{item.label}</span>}
                 </button>
               </li>
             ))}
@@ -86,13 +86,13 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
         </nav>
 
         {/* Footer */}
-        <div className="sidebar__footer">
-          <div className="sidebar__user">
-            <div className="sidebar__user-avatar">👤</div>
+        <div className={styles.sidebarFooter}>
+          <div className={styles.sidebarUser}>
+            <div className={styles.sidebarUserAvatar}>👤</div>
             {isOpen && (
-              <div className="sidebar__user-info">
-                <span className="sidebar__user-name">User</span>
-                <span className="sidebar__user-email">user@example.com</span>
+              <div className={styles.sidebarUserInfo}>
+                <span className={styles.sidebarUserName}>User</span>
+                <span className={styles.sidebarUserEmail}>user@example.com</span>
               </div>
             )}
           </div>

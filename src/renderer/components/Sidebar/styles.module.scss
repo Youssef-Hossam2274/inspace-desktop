@@ -9,7 +9,7 @@ $sidebar-transition-duration: 0.3s;
 $sidebar-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
 
 // Sidebar overlay
-.sidebar-overlay {
+.sidebarOverlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -54,7 +54,7 @@ $sidebar-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   // Open/closed states
-  &--open {
+  &.sidebarOpen {
     width: $sidebar-width-open;
 
     @include media-down(lg) {
@@ -62,12 +62,12 @@ $sidebar-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
     }
   }
 
-  &--closed {
+  &.sidebarClosed {
     width: $sidebar-width-closed;
   }
 
   // Header section
-  &__header {
+  .sidebarHeader {
     @include flex-between;
     padding: spacing(4);
     border-bottom: 1px solid $border-tertiary;
@@ -75,31 +75,31 @@ $sidebar-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
     flex-shrink: 0;
   }
 
-  &__logo {
+  .sidebarLogo {
     @include flex-center;
     gap: spacing(3);
     min-width: 0; // Allow text to shrink
   }
 
-  &__logo-icon {
+  .sidebarLogoIcon {
     font-size: $font-size-xl;
     flex-shrink: 0;
   }
 
-  &__logo-text {
+  .sidebarLogoText {
     @include heading-5;
     color: $text-primary;
     white-space: nowrap;
     overflow: hidden;
     @include transition(opacity, $sidebar-transition-duration, $sidebar-transition-easing);
-
-    .sidebar--closed & {
-      opacity: 0;
-      width: 0;
-    }
   }
 
-  &__toggle {
+  &.sidebarClosed .sidebarLogoText {
+    opacity: 0;
+    width: 0;
+  }
+
+  .sidebarToggle {
     @include button-base;
     width: 36px;
     height: 36px;
@@ -124,25 +124,25 @@ $sidebar-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
     }
   }
 
-  &__toggle-icon {
+  .sidebarToggleIcon {
     font-size: $font-size-sm;
     font-weight: $font-weight-bold;
     @include transition(transform, 0.2s, ease-in-out);
+  }
 
-    .sidebar--closed & {
-      transform: rotate(180deg);
-    }
+  &.sidebarClosed .sidebarToggleIcon {
+    transform: rotate(180deg);
   }
 
   // Navigation section
-  &__nav {
+  .sidebarNav {
     flex: 1;
     padding: spacing(4) 0;
     overflow-y: auto;
     overflow-x: hidden;
   }
 
-  &__menu {
+  .sidebarMenu {
     list-style: none;
     margin: 0;
     padding: 0 spacing(2);
@@ -151,11 +151,11 @@ $sidebar-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
     gap: spacing(1);
   }
 
-  &__menu-item {
+  .sidebarMenuItem {
     margin: 0;
   }
 
-  &__menu-link {
+  .sidebarMenuLink {
     @include flex-center;
     gap: spacing(3);
     width: 100%;
@@ -185,7 +185,7 @@ $sidebar-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     // Active/selected state
-    &--active {
+    &.sidebarMenuLinkActive {
       background: $primary-color-alpha;
       color: $primary-color;
 
@@ -195,7 +195,7 @@ $sidebar-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
     }
   }
 
-  &__menu-icon {
+  .sidebarMenuIcon {
     font-size: $font-size-lg;
     width: 24px;
     height: 24px;
@@ -203,28 +203,28 @@ $sidebar-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
     flex-shrink: 0;
   }
 
-  &__menu-text {
+  .sidebarMenuText {
     @include text-normal;
     font-weight: $font-weight-medium;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     @include transition(opacity, $sidebar-transition-duration, $sidebar-transition-easing);
+  }
 
-    .sidebar--closed & {
-      opacity: 0;
-      width: 0;
-    }
+  &.sidebarClosed .sidebarMenuText {
+    opacity: 0;
+    width: 0;
   }
 
   // Footer section
-  &__footer {
+  .sidebarFooter {
     padding: spacing(4);
     border-top: 1px solid $border-tertiary;
     flex-shrink: 0;
   }
 
-  &__user {
+  .sidebarUser {
     @include flex-center;
     gap: spacing(3);
     padding: spacing(2);
@@ -242,7 +242,7 @@ $sidebar-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
     }
   }
 
-  &__user-avatar {
+  .sidebarUserAvatar {
     width: 32px;
     height: 32px;
     border-radius: radius(full);
@@ -252,18 +252,18 @@ $sidebar-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
     flex-shrink: 0;
   }
 
-  &__user-info {
+  .sidebarUserInfo {
     min-width: 0;
     text-align: left;
     @include transition(opacity, $sidebar-transition-duration, $sidebar-transition-easing);
-
-    .sidebar--closed & {
-      opacity: 0;
-      width: 0;
-    }
   }
 
-  &__user-name {
+  &.sidebarClosed .sidebarUserInfo {
+    opacity: 0;
+    width: 0;
+  }
+
+  .sidebarUserName {
     @include text-small;
     font-weight: $font-weight-medium;
     color: $text-primary;
@@ -273,7 +273,7 @@ $sidebar-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
     text-overflow: ellipsis;
   }
 
-  &__user-email {
+  .sidebarUserEmail {
     @include text-xs;
     color: $text-tertiary;
     display: block;
@@ -283,8 +283,8 @@ $sidebar-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   // Tooltip for closed sidebar
-  &--closed {
-    .sidebar__menu-link {
+  &.sidebarClosed {
+    .sidebarMenuLink {
       position: relative;
 
       &:hover::after {
