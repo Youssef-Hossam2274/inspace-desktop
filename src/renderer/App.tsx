@@ -1,16 +1,16 @@
 import React from 'react';
-import Layout from './components/Layout';
 
 const App: React.FC = () => {
+  // Add a test variable to trigger linting
+  const testMessage = 'Application is working!';
+  
   return (
-    <Layout>
+    <div className="app">
       <header className="app-header">
-        <div className="app-header__controls">
-          <h1>InSpace Desktop</h1>
-        </div>
+        <h1>InSpace Desktop</h1>
         <p>Welcome to your Electron + React + TypeScript + SCSS application!</p>
+        <p>{testMessage}</p>
       </header>
-      
       <main className="app-main">
         <div className="feature-card">
           <h2>🚀 Features</h2>
@@ -20,13 +20,10 @@ const App: React.FC = () => {
             <li>✅ SCSS for styling</li>
             <li>✅ ESLint for code quality</li>
             <li>✅ Husky for git hooks</li>
-            <li>✅ Collapsible sidebar with smooth animations</li>
-            <li>✅ Modern AI-inspired interface</li>
-            <li>✅ CSS Modules for scoped styling</li>
           </ul>
         </div>
       </main>
-    </Layout>
+    </div>
   );
 };
 
