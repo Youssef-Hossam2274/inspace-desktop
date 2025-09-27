@@ -1,6 +1,7 @@
 {
   "name": "inspace-desktop",
   "version": "1.0.0",
+  "type": "module",
   "description": "A desktop application built with Electron, React, TypeScript, and SCSS",
   "main": "./dist/main/main.js",
   "homepage": "./",
