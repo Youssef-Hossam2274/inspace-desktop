@@ -1,0 +1,277 @@
+.newChatContainer {
+    height: 100vh;
+    @include flex-column;
+    background: $bg-primary;
+}
+
+.messagesContainer {
+    flex: 1;
+    overflow-y: auto;
+    padding: spacing(6) spacing(4);
+    @include flex-column;
+
+    // Custom scrollbar
+    &::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: $border-primary;
+        border-radius: radius(full);
+
+        &:hover {
+            background: $text-tertiary;
+        }
+    }
+}
+
+.welcomeMessage {
+    @include flex-column-center;
+    flex: 1;
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+
+    h2 {
+        @include heading-base;
+        font-size: $font-size-3xl;
+        color: $text-primary;
+        margin-bottom: spacing(4);
+        font-weight: $font-weight-bold;
+    }
+
+    p {
+        font-size: $font-size-lg;
+        color: $text-secondary;
+        font-weight: $font-weight-normal;
+        line-height: $line-height-relaxed;
+    }
+}
+
+.messagesList {
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+    @include flex-column;
+    gap: spacing(4);
+}
+
+.message {
+    @include flex-column;
+    gap: spacing(2);
+    animation: fadeInUp 0.3s ease-out;
+}
+
+.userMessage {
+    align-items: flex-end;
+
+    .messageContent {
+        background: $primary-color;
+        color: white;
+        border-radius: radius(xl) radius(xl) radius(base) radius(xl);
+    }
+}
+
+.assistantMessage {
+    align-items: flex-start;
+
+    .messageContent {
+        background: $bg-secondary;
+        color: $text-primary;
+        border: 1px solid $border-secondary;
+        border-radius: radius(xl) radius(xl) radius(xl) radius(base);
+    }
+}
+
+.messageContent {
+    max-width: 70%;
+    padding: spacing(4) spacing(5);
+    font-size: $font-size-base;
+    line-height: $line-height-relaxed;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    box-shadow: $shadow-sm;
+    @include transition(transform, 0.2s, ease-out);
+
+    &:hover {
+        transform: translateY(-1px);
+    }
+}
+
+.messageTime {
+    font-size: $font-size-xs;
+    color: $text-muted;
+    margin: 0 spacing(2);
+}
+
+.inputContainer {
+    position: relative;
+    padding: spacing(4) 0;
+}
+
+.scrollToBottomButton {
+    position: absolute;
+    top: -50%;
+    right: 50%;
+    width: 48px;
+    height: 48px;
+    @include flex-center;
+    background: $bg-secondary;
+    border: 1px solid $border-secondary;
+    border-radius: radius(full);
+    color: $text-secondary;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    @include transition(all, 0.2s, ease-out);
+    z-index: z(docked);
+
+    &:hover {
+        background: $bg-tertiary;
+        border-color: $border-primary;
+        color: $text-primary;
+        transform: scale(1.05);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    &:active {
+        transform: scale(0.95);
+    }
+
+    svg {
+        transform: rotate(180deg); // Flip arrow to point down
+        @include transition(transform, 0.2s, ease-out);
+    }
+
+    // Animation for appearance
+    animation: slideInUp 0.3s ease-out;
+}
+
+// Animations
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.8);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+// Responsive Design
+@include media-down(md) {
+    .messagesContainer {
+        padding: spacing(4) spacing(3);
+    }
+
+    .welcomeMessage {
+        h2 {
+            font-size: $font-size-2xl;
+        }
+
+        p {
+            font-size: $font-size-base;
+        }
+    }
+
+    .messageContent {
+        max-width: 85%;
+        padding: spacing(3) spacing(4);
+        font-size: $font-size-sm;
+    }
+
+    .inputContainer {
+        padding: spacing(3) 0;
+    }
+
+    .scrollToBottomButton {
+        bottom: spacing(16);
+        right: spacing(4);
+        width: 44px;
+        height: 44px;
+    }
+}
+
+@include media-down(sm) {
+    .messagesContainer {
+        padding: spacing(3) spacing(2);
+    }
+
+    .messagesList {
+        gap: spacing(3);
+    }
+
+    .messageContent {
+        max-width: 90%;
+        padding: spacing(3);
+        font-size: $font-size-sm;
+    }
+
+    .welcomeMessage {
+        h2 {
+            font-size: $font-size-xl;
+            margin-bottom: spacing(3);
+        }
+
+        p {
+            font-size: $font-size-sm;
+        }
+    }
+
+    .scrollToBottomButton {
+        bottom: spacing(14);
+        right: spacing(3);
+        width: 40px;
+        height: 40px;
+
+        svg {
+            width: 16px;
+            height: 16px;
+        }
+    }
+}
+
+// Loading state for messages
+.message.loading {
+    .messageContent {
+        position: relative;
+        overflow: hidden;
+
+        &::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg,
+                    transparent,
+                    rgba(255, 255, 255, 0.1),
+                    transparent);
+            animation: shimmer 1.5s infinite;
+        }
+    }
+}
+
+@keyframes shimmer {
+    to {
+        left: 100%;
+    }
+}

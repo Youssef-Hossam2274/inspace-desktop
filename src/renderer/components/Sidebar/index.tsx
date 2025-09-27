@@ -53,7 +53,6 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
         {/* Header */}
         <div className={styles.sidebarHeader}>
           <div className={styles.sidebarLogo}>
-            <span className={styles.sidebarLogoIcon}>🚀</span>
             {isOpen && <span className={styles.sidebarLogoText}>InSpace</span>}
           </div>
           <button
@@ -62,7 +61,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
             aria-label={isOpen ? 'Close sidebar' : 'Open sidebar'}
           >
             <span className={styles.sidebarToggleIcon}>
-              {isOpen ? '←' : '→'}
+              ←
             </span>
           </button>
         </div>
