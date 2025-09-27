@@ -1,16 +1,28 @@
 import React from 'react';
-import Sidebar from '../Sidebar';
+import Sidebar, { SidebarProvider, useSidebar } from '../Sidebar';
 import { LayoutProps } from './types';
-import styles from './styles.module.scss';
+import './styles.scss';
+
+const LayoutContent: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isOpen } = useSidebar();
+  
+  return (
+    <div className={`layout__content ${isOpen ? 'layout__content--open' : 'layout__content--closed'}`}>
+      {children}
+    </div>
+  );
+};
 
 const Layout: React.FC<LayoutProps> = ({ children, className }) => {
   return (
-    <div className={`${styles?.layout || 'layout'} ${className || ''}`}>
-      <Sidebar />
-      <div className={styles?.layoutContent || 'layout__content'}>
-        {children}
+    <SidebarProvider>
+      <div className={`layout ${className || ''}`}>
+        <Sidebar />
+        <LayoutContent>
+          {children}
+        </LayoutContent>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 
