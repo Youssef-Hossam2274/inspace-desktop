@@ -5,6 +5,7 @@
     "noEmit": false
   },
   "include": [
-    "src/renderer"
+    "src/renderer",
+    "src/renderer/types"
   ]
 }
