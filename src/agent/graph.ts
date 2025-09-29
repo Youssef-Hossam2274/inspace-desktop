@@ -1,6 +1,6 @@
 import { StateGraph, Annotation } from "@langchain/langgraph";
-import { AgentState } from "./types.ts";
-import { perceptionNode } from "./nodes/perception.ts";
+import { AgentState } from "./types";
+import { perceptionNode } from "./nodes/perception";
 // import { reasoningNode } from "./nodes/reasoning";
 // import { actionNode } from "./nodes/action";
 
