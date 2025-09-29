@@ -1,5 +1,5 @@
-import { ActionPlan, UIElement, ActionResult } from "../agent/types";
-import {LLM_API_CONFIG} from "../config/LLMConfig.ts"
+import { ActionPlan, UIElement, ActionResult } from "../../agent/types";
+import {LLM_API_CONFIG} from "../../config/LLMConfig"
 
 export class ElementFilter {
   private static readonly INTERACTIVE_TYPES = [

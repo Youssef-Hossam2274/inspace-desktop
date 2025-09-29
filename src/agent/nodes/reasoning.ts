@@ -1,5 +1,5 @@
 import {AgentState, ActionPlan} from "../types";
-// import {callLLMApi} from "../../services/llmAPI";
+import {callLLMApi} from "../../services/llm/llmAPI";
 
 export async function reasoningNode(state: AgentState): Promise<Partial<AgentState>>{
     console.log(`[Reasoning] Starting reasoning node - Iteration ${state.iteration_count}`);

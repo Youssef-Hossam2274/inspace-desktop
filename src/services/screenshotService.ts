@@ -1,4 +1,4 @@
-import { Screenshot } from "../agent/types.ts";
+import { Screenshot } from "../agent/types";
 import robot from "robotjs";
 import { PNG } from 'pngjs';
 

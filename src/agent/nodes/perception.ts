@@ -1,6 +1,6 @@
-import { AgentState, Screenshot, PerceptionResult } from "../types.ts";
-import { captureScreenshot } from "../../services/screenshotService.ts";
-import { callPerceptionApi } from "../../services/perceptionAPI.ts";
+import { AgentState, Screenshot, PerceptionResult } from "../types";
+import { captureScreenshot } from "../../services/screenshotService";
+import { callPerceptionApi } from "../../services/perceptionAPI";
 
 export async function perceptionNode(state: AgentState): Promise<Partial<AgentState>> {
   console.log(`[Perception] Starting perception node - Iteration ${state.iteration_count}`);
