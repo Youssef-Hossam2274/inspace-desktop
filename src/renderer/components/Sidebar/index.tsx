@@ -1,6 +1,7 @@
-import React, { useState, createContext, useContext } from 'react';
-import { SidebarProps, MenuItem } from './types';
-import styles from './styles.module.scss';
+import React, { useState, createContext, useContext } from "react";
+import { Link } from "react-router-dom";
+import { SidebarProps, MenuItem } from "./types";
+import styles from "./styles.module.scss";
 
 // Context for sidebar state
 interface SidebarContextType {
@@ -13,12 +14,14 @@ const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 export const useSidebar = () => {
   const context = useContext(SidebarContext);
   if (!context) {
-    throw new Error('useSidebar must be used within a SidebarProvider');
+    throw new Error("useSidebar must be used within a SidebarProvider");
   }
   return context;
 };
 
-export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleSidebar = () => {
@@ -33,11 +36,18 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({ child
 };
 
 const menuItems: MenuItem[] = [
-  { id: 'new-chat', label: 'New Chat', icon: '💬', onClick: () => console.log('New Chat') },
-  { id: 'history', label: 'Chat History', icon: '📋', onClick: () => console.log('History') },
-  { id: 'templates', label: 'Templates', icon: '📄', onClick: () => console.log('Templates') },
-  { id: 'settings', label: 'Settings', icon: '⚙️', onClick: () => console.log('Settings') },
-  { id: 'help', label: 'Help & Support', icon: '❓', onClick: () => console.log('Help') },
+  {
+    id: "new-chat",
+    label: "New Chat",
+    icon: "💬",
+    href: "/",
+  },
+  {
+    id: "test",
+    label: "Testing",
+    icon: "🧪",
+    href: "/testing",
+  },
 ];
 
 const Sidebar: React.FC<SidebarProps> = ({ className }) => {
@@ -46,10 +56,16 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
   return (
     <>
       {/* Overlay for mobile */}
-      {isOpen && <div className={styles.sidebarOverlay} onClick={toggleSidebar} />}
-      
+      {isOpen && (
+        <div className={styles.sidebarOverlay} onClick={toggleSidebar} />
+      )}
+
       {/* Sidebar */}
-      <aside className={`${styles.sidebar} ${isOpen ? styles.sidebarOpen : styles.sidebarClosed} ${className || ''}`}>
+      <aside
+        className={`${styles.sidebar} ${
+          isOpen ? styles.sidebarOpen : styles.sidebarClosed
+        } ${className || ""}`}
+      >
         {/* Header */}
         <div className={styles.sidebarHeader}>
           <div className={styles.sidebarLogo}>
@@ -58,11 +74,9 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
           <button
             className={styles.sidebarToggle}
             onClick={toggleSidebar}
-            aria-label={isOpen ? 'Close sidebar' : 'Open sidebar'}
+            aria-label={isOpen ? "Close sidebar" : "Open sidebar"}
           >
-            <span className={styles.sidebarToggleIcon}>
-              ←
-            </span>
+            <span className={styles.sidebarToggleIcon}>←</span>
           </button>
         </div>
 
@@ -71,31 +85,39 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
           <ul className={styles.sidebarMenu}>
             {menuItems.map((item) => (
               <li key={item.id} className={styles.sidebarMenuItem}>
-                <button
-                  className={styles.sidebarMenuLink}
-                  onClick={item.onClick}
-                  title={!isOpen ? item.label : undefined}
-                >
-                  <span className={styles.sidebarMenuIcon}>{item.icon}</span>
-                  {isOpen && <span className={styles.sidebarMenuText}>{item.label}</span>}
-                </button>
+                <Link style={{ textDecoration: "none" }} to={item.href || "#"}>
+                  <button
+                    className={styles.sidebarMenuLink}
+                    onClick={item.onClick}
+                    title={!isOpen ? item.label : undefined}
+                  >
+                    <span className={styles.sidebarMenuIcon}>{item.icon}</span>
+                    {isOpen && (
+                      <span className={styles.sidebarMenuText}>
+                        {item.label}
+                      </span>
+                    )}
+                  </button>
+                </Link>
               </li>
             ))}
           </ul>
         </nav>
 
         {/* Footer */}
-        <div className={styles.sidebarFooter}>
+        {/* <div className={styles.sidebarFooter}>
           <div className={styles.sidebarUser}>
             <div className={styles.sidebarUserAvatar}>👤</div>
             {isOpen && (
               <div className={styles.sidebarUserInfo}>
                 <span className={styles.sidebarUserName}>User</span>
-                <span className={styles.sidebarUserEmail}>user@example.com</span>
+                <span className={styles.sidebarUserEmail}>
+                  user@example.com
+                </span>
               </div>
             )}
           </div>
-        </div>
+        </div> */}
       </aside>
     </>
   );

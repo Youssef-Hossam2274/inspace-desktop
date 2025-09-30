@@ -58,10 +58,6 @@ const NewChat: FC = () => {
 
   const handleExcuteActions = async () => {
     // Execute nut.js functionality - move mouse and take screenshot
-
-    console.log(window.electronAPI);
-
-    await window.electronAPI.scrollAction({ dir: "down", amount: 300 });
   };
 
   const handleSendMessage = (content: string) => {

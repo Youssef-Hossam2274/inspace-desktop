@@ -1,21 +1,18 @@
 import { mouse } from "@nut-tree-fork/nut-js";
 import { IpcMainInvokeEvent } from "electron";
-import { NutJSResult } from "../../renderer/types/electron";
+import { NutJSResult } from "../../../renderer/types/electron";
 
 export interface ScrollActionOptions {
   dir: "up" | "down" | "left" | "right";
   amount: number;
 }
 
-export interface ScrollActionResult extends NutJSResult {
-  amount?: number;
-}
-
 export const scrollAction = async (
   event: IpcMainInvokeEvent,
   args: ScrollActionOptions
-): Promise<ScrollActionResult> => {
+): Promise<NutJSResult> => {
   const { dir, amount } = args;
+
   try {
     switch (dir) {
       case "up":
