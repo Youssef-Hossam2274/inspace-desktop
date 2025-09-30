@@ -32,11 +32,6 @@ export async function captureScreenshot(): Promise<Screenshot | null> {
   }
 }
 
-/**
- * @param regionIndex - Grid cell index (0-based, left-to-right, top-to-bottom)
- * @param gridRows - Number of rows in grid
- * @param gridCols - Number of columns in grid
- */
 export async function captureGridRegion(
   regionIndex: number,
   gridRows: number = 4,
@@ -80,13 +75,72 @@ export async function captureGridRegion(
   }
 }
 
-/**
- * @param regionCoords - Coords from OmniParse [x1, y1, x2, y2] in 0-1 scale (relative to region)
- * @param regionIndex - Which grid cell
- * @param gridRows - Grid rows
- * @param gridCols - Grid columns
- * @returns Screen-normalized coords [x1, y1, x2, y2] in 0-1 scale (relative to full screen)
- */
+export async function captureMultipleRegions(
+  regionIndices: number[],
+  gridRows: number = 4,
+  gridCols: number = 4
+): Promise<{ screenshot: Screenshot; regionBounds: [number, number, number, number] } | null> {
+  console.log(`Capturing ${regionIndices.length} regions as one screenshot: [${regionIndices.join(', ')}]`);
+  
+  try {
+    const screenSize = robot.getScreenSize();
+    const regionWidth = screenSize.width / gridCols;
+    const regionHeight = screenSize.height / gridRows;
+    
+    // Calculate bounding box that covers all regions
+    let minRow = Infinity, minCol = Infinity;
+    let maxRow = -Infinity, maxCol = -Infinity;
+    
+    for (const idx of regionIndices) {
+      const row = Math.floor(idx / gridCols);
+      const col = idx % gridCols;
+      minRow = Math.min(minRow, row);
+      minCol = Math.min(minCol, col);
+      maxRow = Math.max(maxRow, row);
+      maxCol = Math.max(maxCol, col);
+    }
+    
+    // Calculate absolute screen coordinates
+    const x = Math.floor(minCol * regionWidth);
+    const y = Math.floor(minRow * regionHeight);
+    const width = Math.floor((maxCol + 1) * regionWidth) - x;
+    const height = Math.floor((maxRow + 1) * regionHeight) - y;
+    
+    console.log(`Bounding box: rows[${minRow}-${maxRow}] cols[${minCol}-${maxCol}]`);
+    console.log(`Screen coords: x=${x}, y=${y}, w=${width}, h=${height}`);
+    
+    // Capture the combined area
+    const img = robot.screen.capture(x, y, width, height);
+    const pngBuffer = createPNGFromBGRA(img.image, img.width, img.height);
+    const base64 = pngBuffer.toString('base64');
+    
+    console.log(`Multi-region screenshot captured: ${img.width}x${img.height}`);
+    
+    const regionBounds: [number, number, number, number] = [
+      x / screenSize.width,
+      y / screenSize.height,
+      (x + width) / screenSize.width,
+      (y + height) / screenSize.height
+    ];
+    
+    return {
+      screenshot: {
+        data: base64,
+        timestamp: Date.now(),
+        dimensions: {
+          width: img.width,
+          height: img.height
+        }
+      },
+      regionBounds
+    };
+    
+  } catch (error) {
+    console.error("Failed to capture multi-region:", error);
+    return null;
+  }
+}
+
 export function regionCoordsToScreenCoords(
   regionCoords: [number, number, number, number],
   regionIndex: number,
@@ -109,6 +163,26 @@ export function regionCoordsToScreenCoords(
     regionY + (ry2 * regionHeightNorm)
   ];
 }
+
+
+export function multiRegionCoordsToScreen(
+  localCoords: [number, number, number, number],
+  regionBounds: [number, number, number, number]
+): [number, number, number, number] {
+  const [bx1, by1, bx2, by2] = regionBounds;
+  const [lx1, ly1, lx2, ly2] = localCoords;
+  
+  const boundsWidth = bx2 - bx1;
+  const boundsHeight = by2 - by1;
+  
+  return [
+    bx1 + (lx1 * boundsWidth),
+    by1 + (ly1 * boundsHeight),
+    bx1 + (lx2 * boundsWidth),
+    by1 + (ly2 * boundsHeight)
+  ];
+}
+
 
 function createPNGFromBGRA(bgraBuffer: Buffer, width: number, height: number): Buffer {
   try {
@@ -165,7 +239,7 @@ export async function captureElementScreenshot(bbox: [number, number, number, nu
     const pngBuffer = createPNGFromBGRA(img.image, img.width, img.height);
     const base64 = pngBuffer.toString('base64');
     
-    console.log(`[ScreenshotService] Element screenshot captured: ${img.width}x${img.height}`);
+    console.log(`Element screenshot captured: ${img.width}x${img.height}`);
     
     return {
       data: base64,
@@ -177,7 +251,7 @@ export async function captureElementScreenshot(bbox: [number, number, number, nu
     };
     
   } catch (error) {
-    console.error("[ScreenshotService] Failed to capture element screenshot:", error);
+    console.error("Failed to capture element screenshot:", error);
     return null;
   }
 }
