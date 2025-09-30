@@ -75,7 +75,7 @@ const NewChat: FC = () => {
 
     // Here you would typically send the message to your AI service
     // For now, we'll just add a mock response
-    window.setTimeout(() => {
+    window.setTimeout(async () => {
       const responseMessage: Message = {
         id: (Date.now() + 1).toString(),
         content: "I received your message: " + content,
@@ -83,6 +83,8 @@ const NewChat: FC = () => {
         sender: "assistant",
       };
       setMessages((prev) => [...prev, responseMessage]);
+      const result = await window.electronAPI.executePrompt(content);
+      console.log(result);
       // Scroll to bottom when response arrives
       // window.setTimeout(() => scrollToBottom(), 100);
       handleExcuteActions();

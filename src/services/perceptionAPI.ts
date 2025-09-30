@@ -52,8 +52,8 @@ export async function callPerceptionApi(
       const errorText = await response.text();
       throw new Error(`HTTP ${response.status}: ${errorText}`);
     }
-
-    const apiResponse: OmniparserApiResponse = await response.json();
+    const apiResponse: OmniparserApiResponse =
+      (await response.json()) as OmniparserApiResponse;
 
     console.log(
       `API returned ${apiResponse.parsed_content_list?.length || 0} elements`

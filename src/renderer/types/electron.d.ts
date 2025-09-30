@@ -8,6 +8,7 @@ export interface NutJSResult {
 
 export interface IElectronAPI {
   platform: string;
+  executePrompt: (userPrompt: string) => any;
   cuaActions: (params: CUAActionOptions) => Promise<NutJSResult>;
 }
 

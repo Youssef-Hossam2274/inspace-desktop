@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   platform: process.platform,
 
   // Nut.js functionality
-
+  executePrompt: (userPrompt: string) =>
+    ipcRenderer.invoke("execute-prompt", userPrompt),
   cuaActions: (params: any) => ipcRenderer.invoke("cua-actions", params),
 });

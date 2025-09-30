@@ -2,6 +2,7 @@ import * as path from "path";
 import { fileURLToPath } from "url";
 import { app, BrowserWindow, ipcMain } from "electron";
 import { cuaActions } from "./NutActions/index.js";
+import { executeAgentWorkflow } from "../agent/graph.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -48,6 +49,23 @@ app.on("activate", () => {
   // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
+  }
+});
+
+ipcMain.handle("execute-prompt", async (event, userPrompt: string) => {
+  console.log(`Received prompt: ${userPrompt}`);
+  try {
+    const result = await executeAgentWorkflow(userPrompt);
+    return { success: true, result };
+  } catch (error) {
+    console.error(
+      "Error executing agent workflow:",
+      error instanceof Error ? error.message : error
+    );
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    };
   }
 });
 
