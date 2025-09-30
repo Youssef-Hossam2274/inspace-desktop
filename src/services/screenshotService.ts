@@ -32,6 +32,84 @@ export async function captureScreenshot(): Promise<Screenshot | null> {
   }
 }
 
+/**
+ * @param regionIndex - Grid cell index (0-based, left-to-right, top-to-bottom)
+ * @param gridRows - Number of rows in grid
+ * @param gridCols - Number of columns in grid
+ */
+export async function captureGridRegion(
+  regionIndex: number,
+  gridRows: number = 4,
+  gridCols: number = 4
+): Promise<Screenshot | null> {
+  console.log(`Capturing region ${regionIndex} from ${gridRows}x${gridCols} grid`);
+  
+  try {
+    const screenSize = robot.getScreenSize();
+
+    const row = Math.floor(regionIndex / gridCols);
+    const col = regionIndex % gridCols;
+    
+    const regionWidth = Math.floor(screenSize.width / gridCols);
+    const regionHeight = Math.floor(screenSize.height / gridRows);
+    
+    const x = col * regionWidth;
+    const y = row * regionHeight;
+    
+    console.log(`Region ${regionIndex} at [${row},${col}]: x=${x}, y=${y}, w=${regionWidth}, h=${regionHeight}`);
+    
+    // Capture the region
+    const img = robot.screen.capture(x, y, regionWidth, regionHeight);
+    const pngBuffer = createPNGFromBGRA(img.image, img.width, img.height);
+    const base64 = pngBuffer.toString('base64');
+    
+    console.log(`Region captured: ${img.width}x${img.height}`);
+    
+    return {
+      data: base64,
+      timestamp: Date.now(),
+      dimensions: {
+        width: img.width,
+        height: img.height
+      }
+    };
+    
+  } catch (error) {
+    console.error("Failed to capture region:", error);
+    return null;
+  }
+}
+
+/**
+ * @param regionCoords - Coords from OmniParse [x1, y1, x2, y2] in 0-1 scale (relative to region)
+ * @param regionIndex - Which grid cell
+ * @param gridRows - Grid rows
+ * @param gridCols - Grid columns
+ * @returns Screen-normalized coords [x1, y1, x2, y2] in 0-1 scale (relative to full screen)
+ */
+export function regionCoordsToScreenCoords(
+  regionCoords: [number, number, number, number],
+  regionIndex: number,
+  gridRows: number = 4,
+  gridCols: number = 4
+): [number, number, number, number] {
+  
+  const row = Math.floor(regionIndex / gridCols);
+  const col = regionIndex % gridCols;
+  const regionWidthNorm = 1.0 / gridCols;
+  const regionHeightNorm = 1.0 / gridRows;
+  const regionX = col * regionWidthNorm;
+  const regionY = row * regionHeightNorm;
+  const [rx1, ry1, rx2, ry2] = regionCoords;
+  
+  return [
+    regionX + (rx1 * regionWidthNorm),
+    regionY + (ry1 * regionHeightNorm),
+    regionX + (rx2 * regionWidthNorm),
+    regionY + (ry2 * regionHeightNorm)
+  ];
+}
+
 function createPNGFromBGRA(bgraBuffer: Buffer, width: number, height: number): Buffer {
   try {
     const png = new PNG({ 

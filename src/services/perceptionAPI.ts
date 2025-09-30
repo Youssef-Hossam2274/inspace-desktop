@@ -24,8 +24,10 @@ interface OmniparserApiResponse {
   latency: number;
 }
 
+
+
 export async function callPerceptionApi(screenshot: Screenshot): Promise<PerceptionResult> {
-  console.log(`[PerceptionAPI] Sending screenshot to Omniparser at ${PERCEPTION_API_CONFIG.baseUrl}`);
+  console.log(`Sending screenshot to Omniparser at ${PERCEPTION_API_CONFIG.baseUrl}`);
   
   try {
     const requestBody = {
@@ -48,14 +50,14 @@ export async function callPerceptionApi(screenshot: Screenshot): Promise<Percept
     
     const apiResponse: OmniparserApiResponse = await response.json();
     
-    console.log(`[PerceptionAPI] API returned ${apiResponse.parsed_content_list?.length || 0} elements`);
-    console.log(`[PerceptionAPI] Server processing latency: ${apiResponse.latency}s`);
+    console.log(`API returned ${apiResponse.parsed_content_list?.length || 0} elements`);
+    console.log(`Server processing latency: ${apiResponse.latency}s`);
     
-    // Debug: Log the structure of the first element
     if (apiResponse.parsed_content_list && apiResponse.parsed_content_list.length > 0) {
-      console.log(`[PerceptionAPI] Sample element structure:`, 
+      console.log(`Sample element structure:`, 
         JSON.stringify(apiResponse.parsed_content_list[0], null, 2).substring(0, 200));
     }
+
     // Transform API response to our internal format
     const elements: UIElement[] = apiResponse.parsed_content_list?.map((element: any) => ({
       bbox: element.bbox || [0, 0, 0, 0],
@@ -65,7 +67,7 @@ export async function callPerceptionApi(screenshot: Screenshot): Promise<Percept
     })) || [];
 
     
-    console.log(`[PerceptionAPI] Successfully parsed ${elements.length} UI elements`);
+    console.log(`Successfully parsed ${elements.length} UI elements`);
     console.log(elements)
     return {
       elements,
@@ -75,7 +77,7 @@ export async function callPerceptionApi(screenshot: Screenshot): Promise<Percept
     
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
-    console.error(`[PerceptionAPI] Error calling perception API: ${errorMsg}`);
+    console.error(`Error calling perception API: ${errorMsg}`);
     return {
       elements: [],
       screenshot,

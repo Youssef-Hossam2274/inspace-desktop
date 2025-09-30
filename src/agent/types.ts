@@ -91,7 +91,6 @@ export interface AgentState {
   test_id: string;
   
   // Current iteration data
-  current_screenshot?: Screenshot;
   perception_result?: PerceptionResult;
   action_plan?: ActionPlan;
   action_results?: ActionResult[];
