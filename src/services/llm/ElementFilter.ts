@@ -1,14 +1,38 @@
 import { ActionPlan, UIElement, ActionResult } from "../../agent/types";
-import {LLM_API_CONFIG} from "../../config/LLMConfig"
+import { LLM_API_CONFIG } from "../../config/LLMConfig";
 
 export class ElementFilter {
   private static readonly INTERACTIVE_TYPES = [
-    'button', 'input', 'link', 'textarea', 'select', 'checkbox', 'radio'
+    "button",
+    "input",
+    "link",
+    "textarea",
+    "select",
+    "checkbox",
+    "radio",
   ];
-  
+
   private static readonly STOP_WORDS = new Set([
-    'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
-    'of', 'with', 'is', 'are', 'was', 'were', 'be', 'been', 'being'
+    "the",
+    "a",
+    "an",
+    "and",
+    "or",
+    "but",
+    "in",
+    "on",
+    "at",
+    "to",
+    "for",
+    "of",
+    "with",
+    "is",
+    "are",
+    "was",
+    "were",
+    "be",
+    "been",
+    "being",
   ]);
 
   static filterAndPrioritize(
@@ -21,12 +45,12 @@ export class ElementFilter {
 
     // Extract keywords from prompt
     const keywords = this.extractKeywords(userPrompt);
-    console.log(`[ElementFilter] Keywords: ${keywords.join(', ')}`);
+    console.log(`[ElementFilter] Keywords: ${keywords.join(", ")}`);
 
     // Score and sort elements
-    const scoredElements = elements.map(el => ({
+    const scoredElements = elements.map((el) => ({
       element: el,
-      score: this.calculateRelevanceScore(el, keywords, previousActions)
+      score: this.calculateRelevanceScore(el, keywords, previousActions),
     }));
 
     // Sort by score (descending)
@@ -35,19 +59,21 @@ export class ElementFilter {
     // Take top N elements
     const filtered = scoredElements
       .slice(0, maxElements)
-      .map(se => se.element);
+      .map((se) => se.element);
 
-    console.log(`[ElementFilter] Filtered to ${filtered.length} most relevant elements`);
-    
+    console.log(
+      `[ElementFilter] Filtered to ${filtered.length} most relevant elements`
+    );
+
     return filtered;
   }
 
   private static extractKeywords(prompt: string): string[] {
     return prompt
       .toLowerCase()
-      .replace(/[^\w\s]/g, ' ')
+      .replace(/[^\w\s]/g, " ")
       .split(/\s+/)
-      .filter(word => word.length > 2 && !this.STOP_WORDS.has(word));
+      .filter((word) => word.length > 2 && !this.STOP_WORDS.has(word));
   }
 
   private static calculateRelevanceScore(
@@ -64,12 +90,12 @@ export class ElementFilter {
 
     // Priority 2: Content matches keywords
     const content = element.content.toLowerCase();
-    const matchingKeywords = keywords.filter(kw => content.includes(kw));
+    const matchingKeywords = keywords.filter((kw) => content.includes(kw));
     score += matchingKeywords.length * 50;
 
     // Priority 3: Element type matches keywords
     const type = element.type.toLowerCase();
-    const typeMatches = keywords.filter(kw => type.includes(kw));
+    const typeMatches = keywords.filter((kw) => type.includes(kw));
     score += typeMatches.length * 30;
 
     // Priority 4: Has meaningful content (not empty or too generic)
@@ -91,6 +117,6 @@ export class ElementFilter {
     }
     // Fallback
     const type = element.type.toLowerCase();
-    return this.INTERACTIVE_TYPES.some(t => type.includes(t));
+    return this.INTERACTIVE_TYPES.some((t) => type.includes(t));
   }
 }
