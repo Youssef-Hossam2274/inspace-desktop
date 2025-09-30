@@ -14,7 +14,7 @@ The JSON schema for ActionPlan is:
   "current_step": "number", 
   "status": "in_progress" | "completed" | "failed",
   "actions": [
-    {ّ
+    {
       "step_id": "number",
       "action_type": "click" | "type" | "scroll" | "wait" | "screenshot",
       "description": "string",
