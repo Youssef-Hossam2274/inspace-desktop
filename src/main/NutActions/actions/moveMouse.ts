@@ -1,9 +1,8 @@
-import { mouse } from "@nut-tree-fork/nut-js";
+import { mouse, screen } from "@nut-tree-fork/nut-js";
 import { IpcMainInvokeEvent } from "electron";
 import { NutJSResult } from "../../../renderer/types/electron";
 import { CUAActionParams } from "..";
 import { convertFromBBoxToPxPosition } from "../utils/convertFromBBoxToPxPostion.js";
-
 export const moveMouse = async (
   event: IpcMainInvokeEvent,
   args: CUAActionParams
@@ -11,7 +10,9 @@ export const moveMouse = async (
   const { bbox } = args;
 
   try {
-    const pos = convertFromBBoxToPxPosition(bbox);
+    const m_width = await screen.width();
+    const m_height = await screen.height();
+    const pos = convertFromBBoxToPxPosition(bbox, m_width, m_height);
     await mouse.move([pos]);
 
     return { success: true };

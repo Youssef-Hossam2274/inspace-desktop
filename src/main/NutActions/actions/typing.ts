@@ -1,4 +1,4 @@
-import { keyboard, mouse } from "@nut-tree-fork/nut-js";
+import { keyboard, mouse, screen } from "@nut-tree-fork/nut-js";
 import { IpcMainInvokeEvent } from "electron";
 import { NutJSResult } from "../../../renderer/types/electron";
 import { CUAActionParams } from "..";
@@ -15,7 +15,9 @@ export const typingAction = async (
   const { bbox, text } = args;
 
   try {
-    const pos = convertFromBBoxToPxPosition(bbox);
+    const m_width = await screen.width();
+    const m_height = await screen.height();
+    const pos = convertFromBBoxToPxPosition(bbox, m_width, m_height);
     await mouse.move([pos]);
     await keyboard.type(text);
     return { success: true };

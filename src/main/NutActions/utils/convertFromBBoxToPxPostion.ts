@@ -1,5 +1,7 @@
 export const convertFromBBoxToPxPosition = (
-  bbox: number[]
+  bbox: number[],
+  screenWidth: number,
+  screenHeight: number
 ): { x: number; y: number } => {
-  return { x: bbox[0], y: bbox[1] };
+  return { x: bbox[0] * screenWidth, y: bbox[1] * screenHeight };
 };
