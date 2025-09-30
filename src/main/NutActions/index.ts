@@ -6,9 +6,14 @@ import {
   rightClickAction,
 } from "./actions/click.js";
 import { moveMouse } from "./actions/moveMouse";
+import { typingAction } from "./actions/typing.js";
 
-type ActionType = "click" | "double_click" | "right_click" | "move_mouse";
-//   | "type"
+type ActionType =
+  | "click"
+  | "double_click"
+  | "right_click"
+  | "move_mouse"
+  | "type";
 //   | "key_press"
 //   | "key_combo"
 //   | "clear_input"
@@ -43,6 +48,7 @@ export const cuaActions = async (
     right_click: rightClickAction,
     double_click: leftDoubleClickAction,
     move_mouse: moveMouse,
+    type: typingAction,
   };
 
   return actionEnum[options.action](event, options.params);

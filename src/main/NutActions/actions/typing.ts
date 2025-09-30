@@ -1,19 +1,23 @@
-import { mouse } from "@nut-tree-fork/nut-js";
+import { keyboard, mouse } from "@nut-tree-fork/nut-js";
 import { IpcMainInvokeEvent } from "electron";
 import { NutJSResult } from "../../../renderer/types/electron";
 import { CUAActionParams } from "..";
 import { convertFromBBoxToPxPosition } from "../../../utils/convertFromBBoxToPxPostion";
 
-export const moveMouse = async (
+interface TypeActionOptionsParams extends CUAActionParams {
+  text: string;
+}
+
+export const typingAction = async (
   event: IpcMainInvokeEvent,
-  args: CUAActionParams
+  args: TypeActionOptionsParams
 ): Promise<NutJSResult> => {
-  const { bbox } = args;
+  const { bbox, text } = args;
 
   try {
     const pos = convertFromBBoxToPxPosition(bbox);
     await mouse.move([pos]);
-
+    await keyboard.type(text);
     return { success: true };
   } catch (error) {
     return { success: false, error: (error as Error).message };
