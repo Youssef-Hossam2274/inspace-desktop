@@ -1,7 +1,7 @@
 import { StateGraph, Annotation } from "@langchain/langgraph";
 import { AgentState } from "./types";
 import { perceptionNode } from "./nodes/perception";
-// import { reasoningNode } from "./nodes/reasoning";
+import { reasoningNode } from "./nodes/reasoning";
 // import { actionNode } from "./nodes/action";
 
 // State Schema
@@ -21,46 +21,44 @@ const GraphState = Annotation.Root({
 
 function shouldContinue(state: typeof GraphState.State): string {
   console.log(
-    `[Graph] Checking continue condition. Status: ${state.status}, Iteration: ${state.iteration_count}/${state.max_iterations}`
+    `Checking continue condition. Status: ${state.status}, Iteration: ${state.iteration_count}/${state.max_iterations}`
   );
   if (state.iteration_count >= state.max_iterations) {
-    console.log("[Graph] Max iterations reached");
+    console.log("Max iterations reached");
     return "end";
   }
 
   if (state.status === "failed") {
-    console.log("[Graph] Failed status detected");
+    console.log("Failed status detected");
     return "end";
   }
 
   if (state.status === "completed") {
-    console.log("[Graph] Completed status detected");
+    console.log("Completed status detected");
     return "end";
   }
 
   if (state.action_plan?.next_action === "complete") {
-    console.log("[Graph] Action plan indicates completion");
+    console.log("Action plan indicates completion");
     return "end";
   }
 
   if (state.action_plan?.next_action === "continue") {
-    console.log(
-      "[Graph] Action plan indicates continue - taking new screenshot"
-    );
+    console.log("Action plan indicates continue - taking new screenshot");
     return "perception";
   }
 
-  console.log("[Graph] Continuing normal flow");
+  console.log("Continuing normal flow");
   return "reasoning";
 }
 
 function checkActionResults(state: typeof GraphState.State): string {
   console.log(
-    `[Graph] Checking action results. Results count: ${state.action_results?.length || 0}`
+    `Checking action results. Results count: ${state.action_results?.length || 0}`
   );
 
   if (!state.action_results || state.action_results.length === 0) {
-    console.log("[Graph] No action results found");
+    console.log("No action results found");
     return "end";
   }
 
@@ -68,7 +66,7 @@ function checkActionResults(state: typeof GraphState.State): string {
     (result) => !result.success
   );
   if (failedActions.length > 0) {
-    console.log(`[Graph] Found ${failedActions.length} failed actions`);
+    console.log(`Found ${failedActions.length} failed actions`);
     //  implement retry logic here
     return "end";
   }
@@ -81,9 +79,9 @@ function checkActionResults(state: typeof GraphState.State): string {
 export function createAgentWorkflow() {
   const workflow = new StateGraph(GraphState)
     .addNode("perception", perceptionNode)
-    // .addNode("reasoning", reasoningNode)
+    .addNode("reasoning", reasoningNode)
     // .addNode("action", actionNode)
-    // .addEdge("perception", "reasoning")
+    .addEdge("perception", "reasoning")
     // .addEdge("reasoning", "action")
     // .addConditionalEdges(
     //   "action",
@@ -144,10 +142,10 @@ export async function executeAgentWorkflow(
 
   try {
     const result = await graph.invoke(initialState);
-    console.log("[Graph] Workflow completed successfully");
+    console.log("Workflow completed successfully");
     return result;
   } catch (error) {
-    console.error("[Graph] Workflow failed:", error);
+    console.error("Workflow failed:", error);
     throw error;
   }
 }
