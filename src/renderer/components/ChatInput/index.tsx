@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
+import React, { useState, useRef, useLayoutEffect } from "react";
 import styles from "./styles.module.scss";
 
 interface ChatInputProps {
@@ -26,7 +26,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
     }
   }, [message]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const trimmedMessage = message.trim();
     if (trimmedMessage && !disabled) {
       onSendMessage(trimmedMessage);

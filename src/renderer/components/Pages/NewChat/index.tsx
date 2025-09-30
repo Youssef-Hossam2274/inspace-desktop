@@ -1,4 +1,4 @@
-import { FC, useState, useRef, useEffect } from "react";
+import { FC, useState, useRef, useEffect, useCallback } from "react";
 import ChatInput from "../../ChatInput";
 import styles from "./styles.module.scss";
 
@@ -34,15 +34,15 @@ const NewChat: FC = () => {
   };
 
   // Handle scroll events
-  const handleScroll = () => {
+  const handleScroll = useCallback(() => {
     if (messagesContainerRef.current) {
       setShowScrollButton(!isAtBottom());
     }
-  };
+  }, []);
 
   // Auto-scroll when messages change (only if user is at bottom)
   useEffect(() => {
-    if (isAtBottom()) {
+    if (!isAtBottom()) {
       scrollToBottom();
     }
   }, [messages]);
@@ -54,7 +54,15 @@ const NewChat: FC = () => {
       container.addEventListener("scroll", handleScroll);
       return () => container.removeEventListener("scroll", handleScroll);
     }
-  }, []);
+  }, [handleScroll]);
+
+  const handleExcuteActions = async () => {
+    // Execute nut.js functionality - move mouse and take screenshot
+
+    console.log(window.electronAPI);
+
+    await window.electronAPI.scrollAction({ dir: "down", amount: 300 });
+  };
 
   const handleSendMessage = (content: string) => {
     const newMessage: Message = {
@@ -67,7 +75,7 @@ const NewChat: FC = () => {
     setMessages((prev) => [...prev, newMessage]);
 
     // Always scroll to bottom when user sends a message
-    setTimeout(() => scrollToBottom(), 100);
+    // window.setTimeout(() => scrollToBottom(), 100);
 
     // Here you would typically send the message to your AI service
     // For now, we'll just add a mock response
@@ -80,7 +88,8 @@ const NewChat: FC = () => {
       };
       setMessages((prev) => [...prev, responseMessage]);
       // Scroll to bottom when response arrives
-      setTimeout(() => scrollToBottom(), 100);
+      // window.setTimeout(() => scrollToBottom(), 100);
+      handleExcuteActions();
     }, 1000);
   };
 
