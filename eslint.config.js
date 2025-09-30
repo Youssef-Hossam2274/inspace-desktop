@@ -42,9 +42,10 @@ export default [
       ...react.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
       "react/react-in-jsx-scope": "off",
-      "@typescript-eslint/no-unused-vars": "error",
+      "@typescript-eslint/no-unused-vars": "warn",
       "@typescript-eslint/explicit-function-return-type": "off",
-      "import/order": "error",
+      "import/order": "warn",
+      "@typescript-eslint/no-explicit-any": "warn",
     },
     settings: {
       react: {

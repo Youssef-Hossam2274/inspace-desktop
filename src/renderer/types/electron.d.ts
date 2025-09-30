@@ -1,7 +1,4 @@
-import {
-  ScrollActionOptions,
-  ScrollActionResult,
-} from "../../main/NutActions/scroll";
+import { CUAActionOptions } from "../../main/NutActions";
 
 export interface NutJSResult {
   success: boolean;
@@ -11,7 +8,7 @@ export interface NutJSResult {
 
 export interface IElectronAPI {
   platform: string;
-  scrollAction: (options: ScrollActionOptions) => Promise<ScrollActionResult>;
+  cuaActions: (params: CUAActionOptions) => Promise<NutJSResult>;
 }
 
 declare global {
