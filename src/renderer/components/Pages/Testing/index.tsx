@@ -1,7 +1,7 @@
 export default function TestingPage() {
   const handleTestClick = async () => {
     const result = await window.electronAPI.cuaActions({
-      action: "double_click",
+      action: "right_click",
       params: {},
     });
     console.log("CUA Actions Result:", result);

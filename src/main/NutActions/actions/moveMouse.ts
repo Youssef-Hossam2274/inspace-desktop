@@ -2,7 +2,7 @@ import { mouse } from "@nut-tree-fork/nut-js";
 import { IpcMainInvokeEvent } from "electron";
 import { NutJSResult } from "../../../renderer/types/electron";
 import { CUAActionParams } from "..";
-import { convertFromBBoxToPxPosition } from "../../../utils/convertFromBBoxToPxPostion";
+import { convertFromBBoxToPxPosition } from "../utils/convertFromBBoxToPxPostion.js";
 
 export const moveMouse = async (
   event: IpcMainInvokeEvent,

@@ -5,7 +5,7 @@ import {
   leftDoubleClickAction,
   rightClickAction,
 } from "./actions/click.js";
-import { moveMouse } from "./actions/moveMouse";
+import { moveMouse } from "./actions/moveMouse.js";
 import { typingAction } from "./actions/typing.js";
 
 type ActionType =
