@@ -4,8 +4,8 @@ const PERCEPTION_API_CONFIG = {
   baseUrl: process.env.OMNIPARSER_URL || "http://localhost:8000",
   timeout: 30000,
   endpoints: {
-    parse: "/parse/"
-  }
+    parse: "/parse/",
+  },
 };
 
 interface OmniparserApiResponse {
@@ -24,55 +24,75 @@ interface OmniparserApiResponse {
   latency: number;
 }
 
-export async function callPerceptionApi(screenshot: Screenshot): Promise<PerceptionResult> {
-  console.log(`[PerceptionAPI] Sending screenshot to Omniparser at ${PERCEPTION_API_CONFIG.baseUrl}`);
-  
+export async function callPerceptionApi(
+  screenshot: Screenshot
+): Promise<PerceptionResult> {
+  console.log(
+    `[PerceptionAPI] Sending screenshot to Omniparser at ${PERCEPTION_API_CONFIG.baseUrl}`
+  );
+
   try {
     const requestBody = {
-      base64_image: screenshot.data
+      base64_image: screenshot.data,
     };
 
-    const response = await fetch(`${PERCEPTION_API_CONFIG.baseUrl}${PERCEPTION_API_CONFIG.endpoints.parse}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody),
-      signal: AbortSignal.timeout(PERCEPTION_API_CONFIG.timeout)
-    });
-    
+    const response = await fetch(
+      `${PERCEPTION_API_CONFIG.baseUrl}${PERCEPTION_API_CONFIG.endpoints.parse}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+        signal: AbortSignal.timeout(PERCEPTION_API_CONFIG.timeout),
+      }
+    );
+
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(`HTTP ${response.status}: ${errorText}`);
     }
-    
+
     const apiResponse: OmniparserApiResponse = await response.json();
-    
-    console.log(`[PerceptionAPI] API returned ${apiResponse.parsed_content_list?.length || 0} elements`);
-    console.log(`[PerceptionAPI] Server processing latency: ${apiResponse.latency}s`);
-    
+
+    console.log(
+      `[PerceptionAPI] API returned ${apiResponse.parsed_content_list?.length || 0} elements`
+    );
+    console.log(
+      `[PerceptionAPI] Server processing latency: ${apiResponse.latency}s`
+    );
+
     // Debug: Log the structure of the first element
-    if (apiResponse.parsed_content_list && apiResponse.parsed_content_list.length > 0) {
-      console.log(`[PerceptionAPI] Sample element structure:`, 
-        JSON.stringify(apiResponse.parsed_content_list[0], null, 2).substring(0, 200));
+    if (
+      apiResponse.parsed_content_list &&
+      apiResponse.parsed_content_list.length > 0
+    ) {
+      console.log(
+        `[PerceptionAPI] Sample element structure:`,
+        JSON.stringify(apiResponse.parsed_content_list[0], null, 2).substring(
+          0,
+          200
+        )
+      );
     }
     // Transform API response to our internal format
-    const elements: UIElement[] = apiResponse.parsed_content_list?.map((element: any) => ({
-      bbox: element.bbox || [0, 0, 0, 0],
-      content: element.content || "",
-      type: element.type || element.element_type || "unknown",
-      interactivity: element.interactivity ?? false
-    })) || [];
+    const elements: UIElement[] =
+      apiResponse.parsed_content_list?.map((element: any) => ({
+        bbox: element.bbox || [0, 0, 0, 0],
+        content: element.content || "",
+        type: element.type || element.element_type || "unknown",
+        interactivity: element.interactivity ?? false,
+      })) || [];
 
-    
-    console.log(`[PerceptionAPI] Successfully parsed ${elements.length} UI elements`);
-    console.log(elements)
+    console.log(
+      `[PerceptionAPI] Successfully parsed ${elements.length} UI elements`
+    );
+    console.log(elements);
     return {
       elements,
       screenshot,
-      success: true
+      success: true,
     };
-    
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
     console.error(`[PerceptionAPI] Error calling perception API: ${errorMsg}`);
@@ -80,7 +100,7 @@ export async function callPerceptionApi(screenshot: Screenshot): Promise<Percept
       elements: [],
       screenshot,
       success: false,
-      error: errorMsg
+      error: errorMsg,
     };
   }
 }

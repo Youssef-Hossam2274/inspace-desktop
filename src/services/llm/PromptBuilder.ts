@@ -1,4 +1,4 @@
-import { LLMContext, UIElement, ActionResult } from "../../agent/types"
+import { LLMContext, UIElement, ActionResult } from "../../agent/types";
 export class PromptBuilder {
   static buildSystemPrompt(): string {
     return `You are a UI automation agent that generates action plans for testing user interfaces.
@@ -68,19 +68,25 @@ Guidelines:
 - Match UI elements by their exact content string from the available elements list`;
   }
 
-  static buildUserPrompt(context: LLMContext, filteredElements: UIElement[]): string {
+  static buildUserPrompt(
+    context: LLMContext,
+    filteredElements: UIElement[]
+  ): string {
     const elementsDescription = filteredElements
       .map((el, i) => {
-        const content = el.content.length > 50 
-          ? el.content.substring(0, 47) + '...' 
-          : el.content;
-        const bbox = `[${el.bbox.map(n => n.toFixed(2)).join(',')}]`;
+        const content =
+          el.content.length > 50
+            ? el.content.substring(0, 47) + "..."
+            : el.content;
+        const bbox = `[${el.bbox.map((n) => n.toFixed(2)).join(",")}]`;
         return `${i}:${el.type}:"${content}"@${bbox}`;
       })
-      .join('\n');
-    
-    const previousActionsDescription = this.buildActionsHistory(context.previous_actions);
-    
+      .join("\n");
+
+    const previousActionsDescription = this.buildActionsHistory(
+      context.previous_actions
+    );
+
     return `User Goal: ${context.user_prompt}
 
 Current UI State (iteration ${context.iteration_count}):
@@ -92,14 +98,14 @@ Generate an action plan to accomplish the user's goal. Respond with ONLY the JSO
   }
 
   private static buildActionsHistory(actions: ActionResult[]): string {
-    if (actions.length === 0) return '';
+    if (actions.length === 0) return "";
 
     const recentActions = actions.slice(-5); // Last 5 actions
-    const successCount = actions.filter(a => a.success).length;
-    
-    const summary = `\nCompleted ${successCount}/${actions.length} actions. Recent: ${
-      recentActions.map(a => `${a.step_id}:${a.success ? '✓' : '✗'}`).join(', ')
-    }`;
+    const successCount = actions.filter((a) => a.success).length;
+
+    const summary = `\nCompleted ${successCount}/${actions.length} actions. Recent: ${recentActions
+      .map((a) => `${a.step_id}:${a.success ? "✓" : "✗"}`)
+      .join(", ")}`;
 
     return summary;
   }

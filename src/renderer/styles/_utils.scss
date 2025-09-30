@@ -12,42 +12,65 @@ $breakpoints: (
   md: 768px,
   lg: 1024px,
   xl: 1280px,
-  2xl: 1536px
+  2xl: 1536px,
 );
 
 // Spacing Scale (consistent with modern design systems)
 $spacing: (
   0: 0,
-  1: 0.25rem,    // 4px
-  2: 0.5rem,     // 8px
-  3: 0.75rem,    // 12px
-  4: 1rem,       // 16px
-  5: 1.25rem,    // 20px
-  6: 1.5rem,     // 24px
-  8: 2rem,       // 32px
-  10: 2.5rem,    // 40px
-  12: 3rem,      // 48px
-  16: 4rem,      // 64px
-  20: 5rem,      // 80px
-  24: 6rem,      // 96px
-  32: 8rem,      // 128px
-  40: 10rem,     // 160px
-  48: 12rem,     // 192px
-  56: 14rem,     // 224px
-  64: 16rem      // 256px
+  1: 0.25rem,
+  // 4px
+  2: 0.5rem,
+  // 8px
+  3: 0.75rem,
+  // 12px
+  4: 1rem,
+  // 16px
+  5: 1.25rem,
+  // 20px
+  6: 1.5rem,
+  // 24px
+  8: 2rem,
+  // 32px
+  10: 2.5rem,
+  // 40px
+  12: 3rem,
+  // 48px
+  16: 4rem,
+  // 64px
+  20: 5rem,
+  // 80px
+  24: 6rem,
+  // 96px
+  32: 8rem,
+  // 128px
+  40: 10rem,
+  // 160px
+  48: 12rem,
+  // 192px
+  56: 14rem,
+  // 224px
+  64: 16rem, // 256px
 );
 
 // Border Radius Scale
 $border-radius: (
   none: 0,
-  sm: 0.125rem,   // 2px
-  base: 0.25rem,  // 4px
-  md: 0.375rem,   // 6px
-  lg: 0.5rem,     // 8px
-  xl: 0.75rem,    // 12px
-  2xl: 1rem,      // 16px
-  3xl: 1.5rem,    // 24px
-  full: 9999px
+  sm: 0.125rem,
+  // 2px
+  base: 0.25rem,
+  // 4px
+  md: 0.375rem,
+  // 6px
+  lg: 0.5rem,
+  // 8px
+  xl: 0.75rem,
+  // 12px
+  2xl: 1rem,
+  // 16px
+  3xl: 1.5rem,
+  // 24px
+  full: 9999px,
 );
 
 // Z-index Scale
@@ -64,7 +87,7 @@ $z-index: (
   popover: 1060,
   skipLink: 1070,
   toast: 1080,
-  tooltip: 1090
+  tooltip: 1090,
 );
 
 // Media Query Mixins
@@ -99,11 +122,11 @@ $z-index: (
     $next: null;
     $keys: map.keys($breakpoints);
     $index: list.index($keys, $size);
-    
+
     @if $index < length($keys) {
       $next: list.nth($keys, $index + 1);
     }
-    
+
     @if $next {
       @media (min-width: breakpoint($size)) and (max-width: breakpoint($next) - 1px) {
         @content;
@@ -173,11 +196,11 @@ $z-index: (
   width: 100%;
   margin: 0 auto;
   padding: 0 spacing(4);
-  
+
   @include media-up(sm) {
     padding: 0 spacing(6);
   }
-  
+
   @include media-up(lg) {
     padding: 0 spacing(8);
   }
@@ -187,7 +210,7 @@ $z-index: (
   width: 100%;
   margin: 0 auto;
   padding: 0 spacing(4);
-  
+
   @include media-up(sm) {
     padding: 0 spacing(6);
   }
@@ -200,7 +223,7 @@ $z-index: (
 
 @mixin hover-lift {
   @include transition(transform, 0.2s, ease-out);
-  
+
   &:hover {
     transform: translateY(-2px);
   }
@@ -208,7 +231,7 @@ $z-index: (
 
 @mixin hover-scale($scale: 1.05) {
   @include transition(transform, 0.2s, ease-out);
-  
+
   &:hover {
     transform: scale($scale);
   }
@@ -227,7 +250,7 @@ $z-index: (
     outline: 2px solid var(--focus-ring, #ff6b35);
     outline-offset: 2px;
   }
-  
+
   &:focus:not(:focus-visible) {
     outline: none;
   }
@@ -238,7 +261,7 @@ $z-index: (
   cursor: pointer;
   @include transition();
   @include focus-visible;
-  
+
   &:disabled {
     cursor: not-allowed;
     opacity: 0.5;
@@ -285,7 +308,7 @@ $z-index: (
   @include button-base;
   background: var(--primary-color, #ff6b35);
   color: var(--text-inverse, #1a1a1a);
-  
+
   &:hover:not(:disabled) {
     background: var(--primary-color-dark, #e55a2b);
   }
@@ -296,7 +319,7 @@ $z-index: (
   background: var(--bg-tertiary, #2d2d2d);
   color: var(--text-primary, #f5f5f5);
   border: 1px solid var(--border-primary, #404040);
-  
+
   &:hover:not(:disabled) {
     background: var(--bg-quaternary, #363636);
   }
@@ -308,15 +331,15 @@ $z-index: (
     width: 8px;
     height: 8px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: var(--bg-secondary, #242424);
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: var(--border-primary, #404040);
     border-radius: radius(full);
-    
+
     &:hover {
       background: var(--border-secondary, #333333);
     }
@@ -325,31 +348,51 @@ $z-index: (
 
 // Utility Classes Generator
 @each $name, $value in $spacing {
-  .m-#{$name} { margin: $value; }
-  .mt-#{$name} { margin-top: $value; }
-  .mr-#{$name} { margin-right: $value; }
-  .mb-#{$name} { margin-bottom: $value; }
-  .ml-#{$name} { margin-left: $value; }
-  .mx-#{$name} { 
-    margin-left: $value; 
-    margin-right: $value; 
+  .m-#{$name} {
+    margin: $value;
   }
-  .my-#{$name} { 
-    margin-top: $value; 
-    margin-bottom: $value; 
+  .mt-#{$name} {
+    margin-top: $value;
   }
-  
-  .p-#{$name} { padding: $value; }
-  .pt-#{$name} { padding-top: $value; }
-  .pr-#{$name} { padding-right: $value; }
-  .pb-#{$name} { padding-bottom: $value; }
-  .pl-#{$name} { padding-left: $value; }
-  .px-#{$name} { 
-    padding-left: $value; 
-    padding-right: $value; 
+  .mr-#{$name} {
+    margin-right: $value;
   }
-  .py-#{$name} { 
-    padding-top: $value; 
-    padding-bottom: $value; 
+  .mb-#{$name} {
+    margin-bottom: $value;
+  }
+  .ml-#{$name} {
+    margin-left: $value;
+  }
+  .mx-#{$name} {
+    margin-left: $value;
+    margin-right: $value;
+  }
+  .my-#{$name} {
+    margin-top: $value;
+    margin-bottom: $value;
+  }
+
+  .p-#{$name} {
+    padding: $value;
+  }
+  .pt-#{$name} {
+    padding-top: $value;
+  }
+  .pr-#{$name} {
+    padding-right: $value;
+  }
+  .pb-#{$name} {
+    padding-bottom: $value;
+  }
+  .pl-#{$name} {
+    padding-left: $value;
+  }
+  .px-#{$name} {
+    padding-left: $value;
+    padding-right: $value;
+  }
+  .py-#{$name} {
+    padding-top: $value;
+    padding-bottom: $value;
   }
 }

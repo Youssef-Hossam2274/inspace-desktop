@@ -19,57 +19,63 @@ const GraphState = Annotation.Root({
   last_error: Annotation<string>,
 });
 
-
 function shouldContinue(state: typeof GraphState.State): string {
-  console.log(`[Graph] Checking continue condition. Status: ${state.status}, Iteration: ${state.iteration_count}/${state.max_iterations}`);
+  console.log(
+    `[Graph] Checking continue condition. Status: ${state.status}, Iteration: ${state.iteration_count}/${state.max_iterations}`
+  );
   if (state.iteration_count >= state.max_iterations) {
     console.log("[Graph] Max iterations reached");
     return "end";
   }
-  
+
   if (state.status === "failed") {
     console.log("[Graph] Failed status detected");
     return "end";
   }
-  
+
   if (state.status === "completed") {
     console.log("[Graph] Completed status detected");
     return "end";
   }
-  
+
   if (state.action_plan?.next_action === "complete") {
     console.log("[Graph] Action plan indicates completion");
     return "end";
   }
-  
+
   if (state.action_plan?.next_action === "continue") {
-    console.log("[Graph] Action plan indicates continue - taking new screenshot");
+    console.log(
+      "[Graph] Action plan indicates continue - taking new screenshot"
+    );
     return "perception";
   }
-  
+
   console.log("[Graph] Continuing normal flow");
   return "reasoning";
 }
 
 function checkActionResults(state: typeof GraphState.State): string {
-  console.log(`[Graph] Checking action results. Results count: ${state.action_results?.length || 0}`);
+  console.log(
+    `[Graph] Checking action results. Results count: ${state.action_results?.length || 0}`
+  );
 
   if (!state.action_results || state.action_results.length === 0) {
     console.log("[Graph] No action results found");
     return "end";
   }
-  
-  const failedActions = state.action_results.filter(result => !result.success);
+
+  const failedActions = state.action_results.filter(
+    (result) => !result.success
+  );
   if (failedActions.length > 0) {
     console.log(`[Graph] Found ${failedActions.length} failed actions`);
     //  implement retry logic here
     return "end";
   }
-  
+
   console.log("[Graph] All actions succeeded, checking continuation");
   return "continue_check";
 }
-
 
 // Create the workflow graph
 export function createAgentWorkflow() {
@@ -92,7 +98,7 @@ export function createAgentWorkflow() {
     //   shouldContinue,
     //   {
     //     "perception": "perception",
-    //     "reasoning": "reasoning", 
+    //     "reasoning": "reasoning",
     //     "end": "__end__"
     //   }
     // )
@@ -108,7 +114,10 @@ export function createAgentWorkflow() {
   return workflow.compile();
 }
 
-export function createInitialState(userPrompt: string, testId?: string): typeof GraphState.State {
+export function createInitialState(
+  userPrompt: string,
+  testId?: string
+): typeof GraphState.State {
   return {
     user_prompt: userPrompt,
     test_id: testId || `test_${Date.now()}`,
@@ -120,16 +129,19 @@ export function createInitialState(userPrompt: string, testId?: string): typeof 
     max_iterations: 10,
     status: "running",
     errors: [],
-    last_error: ""
+    last_error: "",
   };
 }
 
-export async function executeAgentWorkflow(userPrompt: string, testId?: string) {
+export async function executeAgentWorkflow(
+  userPrompt: string,
+  testId?: string
+) {
   console.log(`[Graph] Starting agent workflow for prompt: "${userPrompt}"`);
-  
+
   const graph = createAgentWorkflow();
   const initialState = createInitialState(userPrompt, testId);
-  
+
   try {
     const result = await graph.invoke(initialState);
     console.log("[Graph] Workflow completed successfully");

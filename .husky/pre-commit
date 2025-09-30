@@ -1,1 +1,21 @@
 #!/usr/bin/env sh\n. "$(dirname -- "$0")/_/husky.sh"\n\nnpx lint-staged
+
+
+# Fix Format standards
+npm run format ||
+(
+    echo '🤢🤮🤢🤮 Your Format looks disgusting. 🤢🤮🤢🤮
+            Style Fix Failed. Run npm run format, add changes and try commit again.';
+    false;
+)
+
+git add . ||
+(
+    echo '🤢🤮🤢🤮 Your lint looks disgusting. 🤢🤮🤢🤮
+            ESlint Fix Git Add Failed.';
+    false;
+)
+
+
+# If everything passes... Now we can commit
+echo '✅✅✅✅ You win this time... I am committing this now. ✅✅✅✅'

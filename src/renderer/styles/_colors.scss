@@ -2,43 +2,43 @@
 // Professional gray-blue theme with sophisticated aesthetics
 
 // Primary Colors
-$primary-color: #6b7db5;           // Gray-blue accent color
-$primary-color-light: #8591c7;    // Lighter variant
-$primary-color-dark: #5a6a9e;     // Darker variant
+$primary-color: #6b7db5; // Gray-blue accent color
+$primary-color-light: #8591c7; // Lighter variant
+$primary-color-dark: #5a6a9e; // Darker variant
 $primary-color-alpha: rgba(107, 125, 181, 0.1); // Transparent variant
 
 // Secondary Colors
-$secondary-color: #7a8396;        // Muted gray-blue
-$secondary-color-light: #9099a8;  // Lighter variant
-$secondary-color-dark: #686e7d;   // Darker variant
+$secondary-color: #7a8396; // Muted gray-blue
+$secondary-color-light: #9099a8; // Lighter variant
+$secondary-color-dark: #686e7d; // Darker variant
 
 // Background Colors
-$bg-primary: #1a1a1a;            // Main dark background
-$bg-secondary: #242424;          // Slightly lighter background for cards/sections
-$bg-tertiary: #2d2d2d;           // Even lighter for elevated elements
-$bg-quaternary: #363636;         // Lightest background for interactive elements
+$bg-primary: #1a1a1a; // Main dark background
+$bg-secondary: #242424; // Slightly lighter background for cards/sections
+$bg-tertiary: #2d2d2d; // Even lighter for elevated elements
+$bg-quaternary: #363636; // Lightest background for interactive elements
 
 // Text Colors
-$text-primary: #f5f5f5;          // Primary text (high contrast)
-$text-secondary: #d1d1d1;        // Secondary text (medium contrast)
-$text-tertiary: #a8a8a8;         // Tertiary text (lower contrast)
-$text-muted: #7a7a7a;            // Muted text (lowest contrast)
-$text-inverse: #1a1a1a;          // Inverse text for light backgrounds
+$text-primary: #f5f5f5; // Primary text (high contrast)
+$text-secondary: #d1d1d1; // Secondary text (medium contrast)
+$text-tertiary: #a8a8a8; // Tertiary text (lower contrast)
+$text-muted: #7a7a7a; // Muted text (lowest contrast)
+$text-inverse: #1a1a1a; // Inverse text for light backgrounds
 
 // Border Colors
-$border-primary: #404040;        // Primary borders
-$border-secondary: #333333;      // Secondary borders
-$border-tertiary: #2a2a2a;       // Subtle borders
-$border-focus: $primary-color;   // Focus states
+$border-primary: #404040; // Primary borders
+$border-secondary: #333333; // Secondary borders
+$border-tertiary: #2a2a2a; // Subtle borders
+$border-focus: $primary-color; // Focus states
 
 // State Colors
-$success-color: #4ade80;         // Green for success states
+$success-color: #4ade80; // Green for success states
 $success-color-bg: rgba(74, 222, 128, 0.1);
-$warning-color: #facc15;         // Yellow for warning states
+$warning-color: #facc15; // Yellow for warning states
 $warning-color-bg: rgba(250, 204, 21, 0.1);
-$error-color: #ef4444;           // Red for error states
+$error-color: #ef4444; // Red for error states
 $error-color-bg: rgba(239, 68, 68, 0.1);
-$info-color: #3b82f6;            // Blue for info states
+$info-color: #3b82f6; // Blue for info states
 $info-color-bg: rgba(59, 130, 246, 0.1);
 
 // Interactive Colors
@@ -55,4 +55,8 @@ $shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.25);
 // Gradient Colors
 $gradient-primary: linear-gradient(135deg, $primary-color, $primary-color-dark);
 $gradient-secondary: linear-gradient(135deg, $bg-secondary, $bg-tertiary);
-$gradient-overlay: linear-gradient(to bottom, rgba(26, 26, 26, 0), rgba(26, 26, 26, 0.8));
+$gradient-overlay: linear-gradient(
+  to bottom,
+  rgba(26, 26, 26, 0),
+  rgba(26, 26, 26, 0.8)
+);

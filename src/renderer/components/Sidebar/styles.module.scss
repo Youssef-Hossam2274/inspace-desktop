@@ -25,6 +25,7 @@ $sidebar-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -40,13 +41,21 @@ $sidebar-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
   border-right: 1px solid $border-primary;
   z-index: z(sticky);
   overflow: hidden;
-  @include transition(width, $sidebar-transition-duration, $sidebar-transition-easing);
+  @include transition(
+    width,
+    $sidebar-transition-duration,
+    $sidebar-transition-easing
+  );
   @include custom-scrollbar;
 
   // Mobile responsive
   @include media-down(lg) {
     transform: translateX(-100%);
-    @include transition(transform, $sidebar-transition-duration, $sidebar-transition-easing);
+    @include transition(
+      transform,
+      $sidebar-transition-duration,
+      $sidebar-transition-easing
+    );
   }
 
   // Open/closed states
@@ -87,7 +96,11 @@ $sidebar-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
     color: $text-primary;
     white-space: nowrap;
     overflow: hidden;
-    @include transition(opacity, $sidebar-transition-duration, $sidebar-transition-easing);
+    @include transition(
+      opacity,
+      $sidebar-transition-duration,
+      $sidebar-transition-easing
+    );
   }
 
   &.sidebarClosed .sidebarLogoText {
@@ -205,7 +218,11 @@ $sidebar-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    @include transition(opacity, $sidebar-transition-duration, $sidebar-transition-easing);
+    @include transition(
+      opacity,
+      $sidebar-transition-duration,
+      $sidebar-transition-easing
+    );
   }
 
   &.sidebarClosed .sidebarMenuText {
@@ -251,7 +268,11 @@ $sidebar-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
   .sidebarUserInfo {
     min-width: 0;
     text-align: left;
-    @include transition(opacity, $sidebar-transition-duration, $sidebar-transition-easing);
+    @include transition(
+      opacity,
+      $sidebar-transition-duration,
+      $sidebar-transition-easing
+    );
   }
 
   &.sidebarClosed .sidebarUserInfo {
@@ -307,7 +328,7 @@ $sidebar-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
       }
 
       &:hover::before {
-        content: '';
+        content: "";
         position: absolute;
         left: calc(100% + spacing(1));
         top: 50%;
@@ -334,6 +355,7 @@ $sidebar-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
     opacity: 0;
     transform: translateY(-50%) translateX(-4px);
   }
+
   to {
     opacity: 1;
     transform: translateY(-50%) translateX(0);

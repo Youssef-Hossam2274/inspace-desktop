@@ -1,8 +1,12 @@
-import { contextBridge } from 'electron';
+import { contextBridge, ipcRenderer } from "electron";
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
-contextBridge.exposeInMainWorld('electronAPI', {
+contextBridge.exposeInMainWorld("electronAPI", {
   // Add any APIs you want to expose to the renderer process here
   platform: process.platform,
+
+  // Nut.js functionality
+
+  cuaActions: (params: any) => ipcRenderer.invoke("cua-actions", params),
 });
