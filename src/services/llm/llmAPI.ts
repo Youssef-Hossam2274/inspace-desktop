@@ -1,12 +1,16 @@
-import {ActionPlan} from "../../agent/types";
-import {ElementFilter} from "./ElementFilter"
-import {LLMContext} from "../../agent/types"
-import {PromptBuilder} from "./PromptBuilder"
-import {LLMClient} from "./LLMClient"
+import { ActionPlan } from "../../agent/types";
+import { ElementFilter } from "./ElementFilter";
+import { LLMContext } from "../../agent/types";
+import { PromptBuilder } from "./PromptBuilder";
+import { LLMClient } from "./LLMClient";
 
-export async function callLLMApi(context: LLMContext): Promise<ActionPlan | null> {
-  console.log(`[LLMAPI] Generating action plan for prompt: "${context.user_prompt}"`);
-  
+export async function callLLMApi(
+  context: LLMContext
+): Promise<ActionPlan | null> {
+  console.log(
+    `[LLMAPI] Generating action plan for prompt: "${context.user_prompt}"`
+  );
+
   try {
     const filteredElements = ElementFilter.filterAndPrioritize(
       context.current_elements,
@@ -24,10 +28,11 @@ export async function callLLMApi(context: LLMContext): Promise<ActionPlan | null
       context
     );
 
-    console.log(`[LLMAPI] Generated validated action plan with ${actionPlan.actions.length} actions`);
+    console.log(
+      `[LLMAPI] Generated validated action plan with ${actionPlan.actions.length} actions`
+    );
     console.log(actionPlan);
     return actionPlan;
-    
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
     console.error(`[LLMAPI] Error calling LLM API: ${errorMsg}`);

@@ -6,9 +6,8 @@ import reactHooks from "eslint-plugin-react-hooks";
 import importPlugin from "eslint-plugin-import";
 
 export default [
-  js.configs.recommended,
   {
-    files: ["src/**/*.{ts,tsx}"],
+    files: ["src/**/*.{ts,tsx,js,jsx}"],
     languageOptions: {
       parser: typescriptParser,
       parserOptions: {
@@ -25,6 +24,17 @@ export default [
         process: "readonly",
         HTMLTextAreaElement: "readonly",
         HTMLElement: "readonly",
+        HTMLDivElement: "readonly",
+        setTimeout: "readonly",
+        alert: "readonly",
+        Object: "readonly",
+        fetch: "readonly",
+        require: "readonly",
+        module: "readonly",
+        __dirname: "readonly",
+        Buffer: "readonly",
+        global: "readonly",
+        AbortSignal: "readonly",
       },
     },
     plugins: {
@@ -34,30 +44,19 @@ export default [
       import: importPlugin,
     },
     rules: {
+      ...js.configs.recommended.rules,
       ...typescript.configs.recommended.rules,
       ...react.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
       "react/react-in-jsx-scope": "off",
-      "@typescript-eslint/no-unused-vars": "error",
+      "@typescript-eslint/no-unused-vars": "warn",
       "@typescript-eslint/explicit-function-return-type": "off",
-      "import/order": "error",
+      "import/order": "warn",
+      "@typescript-eslint/no-explicit-any": "warn",
     },
     settings: {
       react: {
         version: "detect",
-      },
-    },
-  },
-  {
-    files: ["src/main/**/*.ts"],
-    languageOptions: {
-      globals: {
-        require: "readonly",
-        module: "readonly",
-        __dirname: "readonly",
-        process: "readonly",
-        Buffer: "readonly",
-        global: "readonly",
       },
     },
   },

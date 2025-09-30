@@ -66,12 +66,12 @@ body {
 
   ul {
     list-style: none;
-    
+
     li {
       padding: spacing(2) 0;
       @include text-normal;
       @include transition(all, 0.3s, ease);
-      
+
       &:hover {
         color: var(--primary-color);
         transform: translateX(spacing(2));

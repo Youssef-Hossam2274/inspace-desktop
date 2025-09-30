@@ -54,7 +54,6 @@ export interface BatchVerification {
   }>;
 }
 
-
 export interface ActionPlan {
   test_id: string;
   current_step: number;
@@ -82,24 +81,23 @@ export interface ActionResult {
   verification_result?: boolean;
 }
 
-
 // Langgraph state
 
 export interface AgentState {
   // Input
   user_prompt: string;
   test_id: string;
-  
+
   // Current iteration data
   perception_result?: PerceptionResult;
   action_plan?: ActionPlan;
   action_results?: ActionResult[];
-  
+
   // Loop control
   iteration_count: number;
   max_iterations: number;
   status: "running" | "completed" | "failed";
-  
+
   // Error handling
   errors: string[];
   last_error?: string;

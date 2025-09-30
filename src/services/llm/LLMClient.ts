@@ -1,9 +1,9 @@
-import {LLM_API_CONFIG} from "../../config/LLMConfig"
+import { LLM_API_CONFIG } from "../../config/LLMConfig";
 import { ActionPlanSchema } from "../../config/ActionSchema";
 import Instructor from "@instructor-ai/instructor";
 import Groq from "groq-sdk";
 import { ActionPlan } from "../../agent/types";
-import {LLMContext} from "../../agent/types"
+import { LLMContext } from "../../agent/types";
 
 export class LLMClient {
   private client: ReturnType<typeof Instructor>;
@@ -11,13 +11,15 @@ export class LLMClient {
 
   constructor() {
     if (!LLM_API_CONFIG.apiKey) {
-      throw new Error("Groq API key not configured. Set LLM_API_KEY or GROQ_API_KEY environment variable");
+      throw new Error(
+        "Groq API key not configured. Set LLM_API_KEY or GROQ_API_KEY environment variable"
+      );
     }
 
     this.groq = new Groq({ apiKey: LLM_API_CONFIG.apiKey });
     this.client = Instructor({
       client: this.groq,
-      mode: "TOOLS"
+      mode: "TOOLS",
     });
   }
 
@@ -27,25 +29,29 @@ export class LLMClient {
     context: LLMContext
   ): Promise<ActionPlan> {
     console.log(`[LLMClient] Calling Groq with model: ${LLM_API_CONFIG.model}`);
-    
+
     const actionPlan = await this.client.chat.completions.create({
       messages: [
         { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt }
+        { role: "user", content: userPrompt },
       ],
       model: LLM_API_CONFIG.model,
       temperature: 0.1,
       response_model: {
         schema: ActionPlanSchema,
-        name: "ActionPlan"
+        name: "ActionPlan",
       },
-      max_retries: LLM_API_CONFIG.maxRetries
+      max_retries: LLM_API_CONFIG.maxRetries,
     });
 
     // Ensure required fields are present (fallbacks)
     return this.ensureRequiredFields(actionPlan as ActionPlan, context);
   }
-  private ensureRequiredFields(plan: ActionPlan, context: LLMContext): ActionPlan {
+
+  private ensureRequiredFields(
+    plan: ActionPlan,
+    context: LLMContext
+  ): ActionPlan {
     plan.test_id = plan.test_id || context.test_id;
     plan.current_step = plan.current_step || context.iteration_count + 1;
     plan.status = plan.status || "in_progress";
@@ -61,7 +67,7 @@ export class LLMClient {
     if (!plan.error_handling) {
       plan.error_handling = {
         on_element_not_found: "take_screenshot",
-        on_timeout: "retry"
+        on_timeout: "retry",
       };
     }
 
@@ -70,8 +76,8 @@ export class LLMClient {
       plan.context = {
         test_data: {
           initial_prompt: context.user_prompt,
-          previous_reasoning: `Iteration ${context.iteration_count}`
-        }
+          previous_reasoning: `Iteration ${context.iteration_count}`,
+        },
       };
     }
 
