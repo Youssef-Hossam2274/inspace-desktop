@@ -45,7 +45,6 @@ export class LLMClient {
     // Ensure required fields are present (fallbacks)
     return this.ensureRequiredFields(actionPlan as ActionPlan, context);
   }
-
   private ensureRequiredFields(plan: ActionPlan, context: LLMContext): ActionPlan {
     plan.test_id = plan.test_id || context.test_id;
     plan.current_step = plan.current_step || context.iteration_count + 1;

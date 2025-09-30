@@ -125,17 +125,17 @@ export function createInitialState(userPrompt: string, testId?: string): typeof 
 }
 
 export async function executeAgentWorkflow(userPrompt: string, testId?: string) {
-  console.log(`[Graph] Starting agent workflow for prompt: "${userPrompt}"`);
+  console.log(`Starting agent workflow for prompt: "${userPrompt}"`);
   
   const graph = createAgentWorkflow();
   const initialState = createInitialState(userPrompt, testId);
   
   try {
     const result = await graph.invoke(initialState);
-    console.log("[Graph] Workflow completed successfully");
+    console.log("Workflow completed successfully");
     return result;
   } catch (error) {
-    console.error("[Graph] Workflow failed:", error);
+    console.error("Workflow failed:", error);
     throw error;
   }
 }

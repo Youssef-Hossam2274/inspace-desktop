@@ -1,5 +1,5 @@
-import { captureScreenshot } from './services/screenshotService.ts';
-import { callPerceptionApi } from './services/perceptionAPI.ts';
+import { captureScreenshot } from './services/screenshotService';
+import { callPerceptionApi } from './services/perceptionAPI';
 import path from "path";
 import { fileURLToPath } from "url";
 
