@@ -45,11 +45,6 @@ sequenceDiagram
     Perception-->>Graph: perception_result
     end
 
-sequenceDiagram
-    participant Graph as StateGraph
-    participant Reasoning as ReasoningNode
-    participant LLM as LLMService
-    participant GroqAPI as GroqAPI
 ```
 
 

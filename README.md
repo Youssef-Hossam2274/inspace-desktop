@@ -2,7 +2,7 @@
 
 ## 📑 Idex 
 
-[System Diagrams](docs/diagrams/diagrams.md)
+[System Diagrams](docs/diagrams/workflow-diagrams.md)
 
 A modern desktop application built with:
 
