@@ -55,6 +55,13 @@ The **Reasoning Phase** interprets the perception results, filters possible UI a
 
 ```mermaid
     %% Reasoning Phase
+  sequenceDiagram
+    participant Graph as StateGraph
+    participant Reasoning as ReasoningNode
+    participant LLM as LLMService
+    participant GroqAPI as GroqAPI
+
+    %% Reasoning Phase
     rect rgb(255, 250, 240)
     Note over Graph,GroqAPI: Reasoning Phase
     Graph->>Reasoning: execute(state)
