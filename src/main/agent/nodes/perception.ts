@@ -3,8 +3,8 @@ import {
   captureScreenshot,
   captureMultipleRegions,
   multiRegionCoordsToScreen,
-} from "../../services/screenshotService";
-import { callPerceptionApi } from "../../services/perceptionAPI";
+} from "../../services/screenshotService.js";
+import { callPerceptionApi } from "../../services/perceptionAPI.js";
 
 const GRID_CONFIG = {
   rows: 4,

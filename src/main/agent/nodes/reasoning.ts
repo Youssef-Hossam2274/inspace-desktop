@@ -1,5 +1,5 @@
-import { AgentState, ActionPlan } from "../types";
-import { callLLMApi } from "../../services/llm/llmAPI";
+import { AgentState } from "../types";
+import { callLLMApi } from "../../services/llm/llmAPI.js";
 
 export async function reasoningNode(
   state: AgentState

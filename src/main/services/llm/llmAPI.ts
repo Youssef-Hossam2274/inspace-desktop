@@ -1,8 +1,8 @@
 import { ActionPlan } from "../../agent/types";
-import { ElementFilter } from "./ElementFilter";
+import { ElementFilter } from "./ElementFilter.js";
 import { LLMContext } from "../../agent/types";
-import { PromptBuilder } from "./PromptBuilder";
-import { LLMClient } from "./LLMClient";
+import { PromptBuilder } from "./PromptBuilder.js";
+import { LLMClient } from "./LLMClient.js";
 
 export async function callLLMApi(
   context: LLMContext
