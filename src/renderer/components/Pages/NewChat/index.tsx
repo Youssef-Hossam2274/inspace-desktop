@@ -68,7 +68,7 @@ const NewChat: FC = () => {
     );
 
     // Hide window and execute actions
-    // await window.electronAPI.hideWindow();
+    await window.electronAPI.hideWindow();
 
     try {
       // Here you would execute the actual actions
@@ -160,7 +160,7 @@ const NewChat: FC = () => {
     setMessages((prev) => [...prev, newMessage]);
     setIsLoading(true);
 
-    // await window.electronAPI.hideWindow();
+    await window.electronAPI.hideWindow();
     await handleExcuteCua(content, "pending");
   };
 
