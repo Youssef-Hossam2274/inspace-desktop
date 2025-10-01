@@ -2,7 +2,7 @@
 
 ## 📑 Idex 
 
-[System Diagrams](docs/diagrams.md)
+[System Diagrams](docs/diagrams/diagrams.md)
 
 A modern desktop application built with:
 
