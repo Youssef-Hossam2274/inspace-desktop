@@ -9,9 +9,11 @@ const __dirname = path.dirname(__filename);
 
 const isDev = process.env.NODE_ENV === "development";
 
+let mainWindow: BrowserWindow | null = null;
+
 function createWindow(): void {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     height: 800,
     width: 1200,
     webPreferences: {
@@ -70,3 +72,15 @@ ipcMain.handle("execute-prompt", async (event, userPrompt: string) => {
 });
 
 ipcMain.handle("cua-actions", cuaActions);
+
+ipcMain.handle("hide-window", () => {
+  if (mainWindow) {
+    mainWindow.hide();
+  }
+});
+
+ipcMain.handle("show-window", () => {
+  if (mainWindow) {
+    mainWindow.show();
+  }
+});
