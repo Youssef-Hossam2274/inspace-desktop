@@ -1,33 +1,55 @@
-import { mouse, Button, screen } from "@nut-tree-fork/nut-js";
-import { IpcMainInvokeEvent } from "electron";
-import { NutJSResult } from "../../../renderer/types/electron";
-import { CUAActionParams } from "..";
-import { convertFromBBoxToPxPosition } from "../utils/convertFromBBoxToPxPostion.js";
+// import { mouse, screen, Point, Button } from "@nut-tree-fork/nut-js";
+// import { IpcMainInvokeEvent } from "electron";
+// import { NutJSResult } from "../../../renderer/types/electron";
+// import { CUAActionParams } from "..";
+// import { convertFromBBoxToPxPosition } from "../utils/convertFromBBoxToPxPostion.js";
 
-export const dragAndDropAction = async (
-  event: IpcMainInvokeEvent,
-  args: CUAActionParams
-): Promise<NutJSResult> => {
-  try {
-    const { from_bbox, to_bbox } = args.parameters || {};
-    if (!from_bbox || !to_bbox) {
-      throw new Error("Missing from_bbox or to_bbox for drag and drop");
-    }
+// export interface DragAndDropParams extends CUAActionParams {
+//   targetBbox: {
+//     x: number;
+//     y: number;
+//     width: number;
+//     height: number;
+//   };
+// }
 
-    const m_width = await screen.width();
-    const m_height = await screen.height();
+// export const dragAndDropAction = async (
+//   event: IpcMainInvokeEvent,
+//   args: DragAndDropParams
+// ): Promise<NutJSResult> => {
+//   const { bbox, targetBbox } = args;
 
-    const fromPos = convertFromBBoxToPxPosition(from_bbox, m_width, m_height);
-    const toPos = convertFromBBoxToPxPosition(to_bbox, m_width, m_height);
+//   try {
+//     if (!bbox) throw new Error("No source bounding box provided");
+//     if (!targetBbox) throw new Error("No target bounding box provided");
 
-    await mouse.move([fromPos]);
-    await mouse.pressButton(Button.LEFT);
+//     const m_width = await screen.width();
+//     const m_height = await screen.height();
 
-    await mouse.move([toPos]);
-    await mouse.releaseButton(Button.LEFT);
+//     // Move to source position
+//     const sourcePos = convertFromBBoxToPxPosition(bbox, m_width, m_height);
+//     const sourcePoint = new Point(sourcePos.x, sourcePos.y);
+//     await mouse.setPosition(sourcePoint);
 
-    return { success: true };
-  } catch (error) {
-    return { success: false, error: (error as Error).message };
-  }
-};
+//     // Press mouse button
+//     await mouse.pressButton(Button.LEFT);
+
+//     // Small delay for stability
+//     await new Promise(resolve => setTimeout(resolve, 100));
+
+//     // Move to target position
+//     const targetPos = convertFromBBoxToPxPosition(targetBbox, m_width, m_height);
+//     const targetPoint = new Point(targetPos.x, targetPos.y);
+//     await mouse.setPosition(targetPoint);
+
+//     // Small delay before release
+//     await new Promise(resolve => setTimeout(resolve, 100));
+
+//     // Release mouse button
+//     await mouse.releaseButton(Button.LEFT);
+
+//     return { success: true };
+//   } catch (error) {
+//     return { success: false, error: (error as Error).message };
+//   }
+// };

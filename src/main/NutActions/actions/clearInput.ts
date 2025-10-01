@@ -1,4 +1,11 @@
-import { keyboard, mouse, screen, Key, Button } from "@nut-tree-fork/nut-js";
+import {
+  keyboard,
+  mouse,
+  screen,
+  Key,
+  Button,
+  Point,
+} from "@nut-tree-fork/nut-js";
 import { IpcMainInvokeEvent } from "electron";
 import { NutJSResult } from "../../../renderer/types/electron";
 import { CUAActionParams } from "..";
@@ -11,17 +18,18 @@ export const clearInputAction = async (
   const { bbox } = args;
 
   try {
-    const m_width = await screen.width();
-    const m_height = await screen.height();
-    const pos = convertFromBBoxToPxPosition(bbox, m_width, m_height);
+    if (bbox) {
+      const m_width = await screen.width();
+      const m_height = await screen.height();
+      const pos = convertFromBBoxToPxPosition(bbox, m_width, m_height);
+      const point = new Point(pos.x, pos.y);
+      await mouse.setPosition(point);
+    }
 
-    await mouse.move([pos]);
     await mouse.click(Button.LEFT);
 
-    await keyboard.pressKey(Key.LeftControl);
-    await keyboard.pressKey(Key.A);
-    await keyboard.releaseKey(Key.A);
-    await keyboard.releaseKey(Key.LeftControl);
+    await keyboard.pressKey(Key.LeftControl, Key.A);
+    await keyboard.releaseKey(Key.A, Key.LeftControl);
 
     await keyboard.pressKey(Key.Backspace);
     await keyboard.releaseKey(Key.Backspace);

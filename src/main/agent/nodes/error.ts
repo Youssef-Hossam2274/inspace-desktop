@@ -38,7 +38,7 @@ export async function errorRecoveryNode(
         last_error: "",
       };
 
-    case "rollback_action":
+    case "rollback_action": {
       const currentStep = state.action_plan?.current_step ?? 0;
       const rollbackStep = Math.max(0, currentStep - 1);
 
@@ -54,7 +54,7 @@ export async function errorRecoveryNode(
           : undefined,
         last_error: "",
       };
-
+    }
     case "retry_reasoning":
       // LLM failed to generate valid plan - retry
       return {

@@ -1,4 +1,4 @@
-import { mouse, Button, screen } from "@nut-tree-fork/nut-js";
+import { mouse, Button, screen, Point } from "@nut-tree-fork/nut-js";
 import { IpcMainInvokeEvent } from "electron";
 import { NutJSResult } from "../../../renderer/types/electron";
 import { CUAActionParams } from "..";
@@ -14,7 +14,8 @@ export const rightClickAction = async (
       const m_width = await screen.width();
       const m_height = await screen.height();
       const pos = convertFromBBoxToPxPosition(bbox, m_width, m_height);
-      await mouse.move([pos]);
+      const point = new Point(pos.x, pos.y);
+      await mouse.setPosition(point);
     }
     await mouse.click(Button.RIGHT);
     return { success: true };

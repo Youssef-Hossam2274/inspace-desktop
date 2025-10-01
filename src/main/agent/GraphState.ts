@@ -15,5 +15,4 @@ export const GraphState = Annotation.Root({
   element_map: Annotation<Map<string, [number, number, number, number]>>,
   retry_count: Annotation<number>,
   max_retries: Annotation<number>,
-  verification_needed: Annotation<boolean>,
 });

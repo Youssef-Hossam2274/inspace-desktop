@@ -21,31 +21,34 @@ export async function createAgentWorkflow() {
     .addNode("verification", verificationNode)
     .addNode("error_recovery", errorRecoveryNode)
 
+    // Always start with perception
     .setEntryPoint("perception")
+
+    // After perception, always go to reasoning
     .addEdge("perception", "reasoning")
 
-    // decide if we need verification first or go straight to action
+    // After reasoning: either execute actions or end (if LLM says complete)
     .addConditionalEdges("reasoning", afterReasoning, {
-      verification: "verification",
       action: "action",
       end: "__end__",
     })
 
-    // check if successful or needs recovery
+    // After action: continue to next action, verify batch, or handle errors
     .addConditionalEdges("action", afterAction, {
-      perception: "perception",
+      action: "action", // Continue with next action in sequence
+      verification: "verification", // All actions done, verify batch
       error_recovery: "error_recovery",
       end: "__end__",
     })
 
-    // After verification continue or recover
+    // After verification: start new iteration or end
     .addConditionalEdges("verification", afterVerification, {
-      perception: "perception",
+      perception: "perception", // Start new iteration
       error_recovery: "error_recovery",
       end: "__end__",
     })
 
-    // After error recovery: retry or give up
+    // After error recovery: retry from perception or end
     .addConditionalEdges("error_recovery", afterErrorRecovery, {
       perception: "perception",
       end: "__end__",
@@ -80,7 +83,6 @@ export function createInitialState(
     element_map: new Map(),
     retry_count: 0,
     max_retries: 3,
-    verification_needed: false,
   };
 }
 
@@ -88,20 +90,37 @@ export async function executeAgentWorkflow(
   userPrompt: string,
   testId?: string
 ) {
+  console.log(`\n==========================================`);
   console.log(`Starting agent workflow for prompt: "${userPrompt}"`);
+  console.log(`==========================================\n`);
 
   const graph = createAgentWorkflow();
   const initialState = createInitialState(userPrompt, testId);
 
   try {
     const result = await (await graph).invoke(initialState);
-    console.log("Workflow completed successfully");
+
+    console.log(`\n==========================================`);
+    console.log(`Workflow completed`);
+    console.log(`==========================================`);
     console.log(`Final status: ${result.status}`);
     console.log(`Total iterations: ${result.iteration_count}`);
+    console.log(
+      `Total actions executed: ${result.action_results?.length || 0}`
+    );
     console.log(`Total errors: ${result.errors?.length || 0}`);
+
+    if (result.errors?.length > 0) {
+      console.log(`\nErrors encountered:`);
+      result.errors.forEach((err, i) => console.log(`  ${i + 1}. ${err}`));
+    }
+
     return result;
   } catch (error) {
-    console.error("Workflow failed with exception:", error);
+    console.error(`\n==========================================`);
+    console.error(`Workflow failed with exception`);
+    console.error(`==========================================`);
+    console.error(error);
     throw error;
   }
 }
