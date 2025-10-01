@@ -19,13 +19,13 @@ import { waitAction } from "../../NutActions/actions/wait.js";
 export async function actionNode(
   state: AgentState
 ): Promise<Partial<AgentState>> {
-  console.log("\n[ACTION] Executing action...");
+  console.log("\nExecuting action...");
 
   const currentStepIndex = state.action_plan?.current_step ?? 0;
   const currentStep = state.action_plan?.actions[currentStepIndex];
 
   if (!currentStep) {
-    console.warn("[ACTION] No current step found in action plan");
+    console.warn("No current step found in action plan");
     return {
       status: "failed",
       last_error: "No current action step found",
@@ -34,12 +34,10 @@ export async function actionNode(
   }
 
   const totalActions = state.action_plan?.actions.length ?? 0;
-  console.log(
-    `[ACTION] Executing step ${currentStepIndex + 1}/${totalActions}`
-  );
-  console.log(`[ACTION] Step ID: ${currentStep.step_id}`);
-  console.log(`[ACTION] Type: ${currentStep.action_type}`);
-  console.log(`[ACTION] Description: ${currentStep.description}`);
+  console.log(`Executing step ${currentStepIndex + 1}/${totalActions}`);
+  console.log(`Step ID: ${currentStep.step_id}`);
+  console.log(`Type: ${currentStep.action_type}`);
+  console.log(`Description: ${currentStep.description}`);
 
   let executionResult;
   const dummyEvent = null as any;

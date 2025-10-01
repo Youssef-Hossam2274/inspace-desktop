@@ -3,32 +3,107 @@ import { GraphState } from "../GraphState";
 export async function verificationNode(
   state: typeof GraphState.State
 ): Promise<Partial<typeof GraphState.State>> {
-  console.log("[Verification] Starting batch verification for iteration...");
+  console.log("\n[VERIFICATION] Starting iteration verification...");
+  console.log(`[VERIFICATION] Iteration ${state.iteration_count}`);
 
   if (!state.action_plan) {
-    console.log("[Verification] No action plan - cannot verify");
+    console.log("[VERIFICATION] No action plan - skipping verification");
+    return {
+      status: "running",
+    };
+  }
+
+  if (!state.perception_result) {
+    console.error("[VERIFICATION] No perception result available!");
     return {
       status: "failed",
-      last_error: "No action plan for verification",
-      errors: [...state.errors, "No action plan for verification"],
+      last_error: "No perception result for verification",
+      errors: [...state.errors, "No perception result for verification"],
     };
   }
 
   const batchVerification = state.action_plan.batch_verification;
-  if (batchVerification?.success_criteria) {
+
+  if (
+    !batchVerification?.success_criteria ||
+    batchVerification.success_criteria.length === 0
+  ) {
     console.log(
-      `[Verification] Checking ${batchVerification.success_criteria.length} criteria:`
+      "[VERIFICATION] No success criteria defined - iteration complete"
     );
-    batchVerification.success_criteria.forEach(
-      (c: { type: string; content: string }, i: number) => {
-        console.log(`  ${i + 1}. ${c.type}: "${c.content}"`);
-      }
-    );
-  } else {
-    console.log("[Verification] No success criteria defined");
+    return {
+      status: "running",
+      retry_count: 0, // Reset retry count on successful iteration
+    };
   }
 
-  return {
-    status: "running",
-  };
+  console.log(
+    `[VERIFICATION] Checking ${batchVerification.success_criteria.length} criteria:`
+  );
+
+  const elements = state.perception_result.elements;
+  console.log(`[VERIFICATION] Available elements: ${elements.length}`);
+
+  let allPassed = true;
+
+  for (const criterion of batchVerification.success_criteria) {
+    const passed = checkCriterion(criterion, elements);
+
+    if (!passed) {
+      console.log(
+        `[VERIFICATION] ✗ FAILED: ${criterion.type} - "${criterion.content}"`
+      );
+      allPassed = false;
+    } else {
+      console.log(
+        `[VERIFICATION] ✓ PASSED: ${criterion.type} - "${criterion.content}"`
+      );
+    }
+  }
+
+  if (allPassed) {
+    console.log("[VERIFICATION] ✓ All criteria passed - iteration successful");
+    return {
+      status: "running",
+      retry_count: 0, // Reset retry count
+    };
+  } else {
+    console.log("[VERIFICATION] ✗ Some criteria failed");
+    const retryCount = state.retry_count || 0;
+
+    return {
+      status: "running",
+      retry_count: retryCount + 1,
+    };
+  }
+}
+
+function checkCriterion(
+  criterion: { type: string; content: string },
+  elements: any[]
+): boolean {
+  switch (criterion.type) {
+    case "text_present":
+      return elements.some((el) =>
+        el.content?.toLowerCase().includes(criterion.content.toLowerCase())
+      );
+
+    case "element_visible":
+      return elements.some(
+        (el) =>
+          el.type?.toLowerCase().includes(criterion.content.toLowerCase()) ||
+          el.content?.toLowerCase().includes(criterion.content.toLowerCase())
+      );
+
+    case "element_not_visible":
+      return !elements.some(
+        (el) =>
+          el.type?.toLowerCase().includes(criterion.content.toLowerCase()) ||
+          el.content?.toLowerCase().includes(criterion.content.toLowerCase())
+      );
+
+    default:
+      console.warn(`[VERIFICATION] Unknown criterion type: ${criterion.type}`);
+      return true;
+  }
 }

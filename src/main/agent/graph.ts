@@ -6,6 +6,7 @@ import { verificationNode } from "./nodes/verification.js";
 import { GraphState } from "./GraphState.js";
 import { errorRecoveryNode } from "./nodes/error.js";
 import {
+  afterPerception,
   afterAction,
   afterReasoning,
   afterVerification,
@@ -21,46 +22,49 @@ export async function createAgentWorkflow() {
     .addNode("verification", verificationNode)
     .addNode("error_recovery", errorRecoveryNode)
 
-    // Always start with perception
+    // Start each iteration with perception
     .setEntryPoint("perception")
 
-    // After perception, always go to reasoning
+    // After perception: always reason about current state
     .addEdge("perception", "reasoning")
 
-    // After reasoning: either execute actions or end (if LLM says complete)
+    // After reasoning: execute actions or end if task complete
     .addConditionalEdges("reasoning", afterReasoning, {
       action: "action",
       end: "__end__",
     })
 
-    // After action: continue to next action, verify batch, or handle errors
+    // After action: continue to next action, or verify when batch done
     .addConditionalEdges("action", afterAction, {
-      action: "action", // Continue with next action in sequence
-      verification: "verification", // All actions done, verify batch
+      action: "action",
+      verification: "verification",
       error_recovery: "error_recovery",
-      end: "__end__",
     })
 
     // After verification: start new iteration or end
     .addConditionalEdges("verification", afterVerification, {
-      perception: "perception", // Start new iteration
-      error_recovery: "error_recovery",
+      perception: "perception",
       end: "__end__",
     })
 
-    // After error recovery: retry from perception or end
+    // After error recovery: retry or end
     .addConditionalEdges("error_recovery", afterErrorRecovery, {
       perception: "perception",
       end: "__end__",
     });
 
   const compiled = workflow.compile();
-  const graphObj = compiled.getGraph();
-  const mermaidSource = graphObj.drawMermaid();
-  fs.writeFileSync("workflow.mmd", mermaidSource);
-  console.log(
-    "Saved workflow.mmd. Open it in VSCode Mermaid extension or any Mermaid live editor."
-  );
+
+  // Save workflow diagram
+  try {
+    const graphObj = compiled.getGraph();
+    const mermaidSource = graphObj.drawMermaid();
+    fs.writeFileSync("workflow.mmd", mermaidSource);
+    console.log("✓ Saved workflow diagram to workflow.mmd");
+  } catch (error) {
+    console.warn("Could not save workflow diagram:", error);
+  }
+
   return compiled;
 }
 
@@ -82,7 +86,7 @@ export function createInitialState(
     last_error: "",
     element_map: new Map(),
     retry_count: 0,
-    max_retries: 3,
+    max_retries: 2,
   };
 }
 
@@ -90,25 +94,26 @@ export async function executeAgentWorkflow(
   userPrompt: string,
   testId?: string
 ) {
-  console.log(`\n==========================================`);
-  console.log(`Starting agent workflow for prompt: "${userPrompt}"`);
-  console.log(`==========================================\n`);
+  console.log(`\n${"=".repeat(60)}`);
+  console.log(`Starting Agent Workflow`);
+  console.log(`User Goal: "${userPrompt}"`);
+  console.log(`${"=".repeat(60)}\n`);
 
-  const graph = createAgentWorkflow();
+  const graph = await createAgentWorkflow();
   const initialState = createInitialState(userPrompt, testId);
 
   try {
-    const result = await (await graph).invoke(initialState);
+    const result = await graph.invoke(initialState, {
+      recursionLimit: 50, // Increased limit but workflow should end naturally
+    });
 
-    console.log(`\n==========================================`);
-    console.log(`Workflow completed`);
-    console.log(`==========================================`);
-    console.log(`Final status: ${result.status}`);
-    console.log(`Total iterations: ${result.iteration_count}`);
-    console.log(
-      `Total actions executed: ${result.action_results?.length || 0}`
-    );
-    console.log(`Total errors: ${result.errors?.length || 0}`);
+    console.log(`\n${"=".repeat(60)}`);
+    console.log(`Workflow Completed`);
+    console.log(`${"=".repeat(60)}`);
+    console.log(`Final Status: ${result.status}`);
+    console.log(`Total Iterations: ${result.iteration_count}`);
+    console.log(`Actions Executed: ${result.action_results?.length || 0}`);
+    console.log(`Errors: ${result.errors?.length || 0}`);
 
     if (result.errors?.length > 0) {
       console.log(`\nErrors encountered:`);
@@ -117,9 +122,9 @@ export async function executeAgentWorkflow(
 
     return result;
   } catch (error) {
-    console.error(`\n==========================================`);
-    console.error(`Workflow failed with exception`);
-    console.error(`==========================================`);
+    console.error(`\n${"=".repeat(60)}`);
+    console.error(`Workflow Failed`);
+    console.error(`${"=".repeat(60)}`);
     console.error(error);
     throw error;
   }
