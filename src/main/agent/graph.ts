@@ -1,7 +1,6 @@
 import { StateGraph, Annotation } from "@langchain/langgraph";
-import { AgentState } from "./types";
-import { perceptionNode } from "./nodes/perception";
-import { reasoningNode } from "./nodes/reasoning";
+import { perceptionNode } from "./nodes/perception.js";
+import { reasoningNode } from "./nodes/reasoning.js";
 // import { actionNode } from "./nodes/action";
 
 // State Schema
@@ -17,6 +16,7 @@ const GraphState = Annotation.Root({
   status: Annotation<"running" | "completed" | "failed">,
   errors: Annotation<string[]>,
   last_error: Annotation<string>,
+  element_map: Annotation<Map<string, [number, number, number, number]>>,
 });
 
 function shouldContinue(state: typeof GraphState.State): string {
@@ -128,6 +128,7 @@ export function createInitialState(
     status: "running",
     errors: [],
     last_error: "",
+    element_map: new Map(),
   };
 }
 

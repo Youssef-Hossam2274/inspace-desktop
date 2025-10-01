@@ -1,5 +1,5 @@
-import { LLM_API_CONFIG } from "../../config/LLMConfig";
-import { ActionPlanSchema } from "../../config/ActionSchema";
+import { LLM_API_CONFIG } from "../../config/LLMConfig.js";
+import { ActionPlanSchema } from "../../config/ActionSchema.js";
 import Instructor from "@instructor-ai/instructor";
 import Groq from "groq-sdk";
 import { ActionPlan } from "../../agent/types";

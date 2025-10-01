@@ -1,10 +1,10 @@
-import { AgentState } from "../types";
+import { AgentState, UIElement } from "../types";
 import {
   captureScreenshot,
   captureMultipleRegions,
   multiRegionCoordsToScreen,
-} from "../../services/screenshotService";
-import { callPerceptionApi } from "../../services/perceptionAPI";
+} from "../../services/screenshotService.js";
+import { callPerceptionApi } from "../../services/perceptionAPI.js";
 
 const GRID_CONFIG = {
   rows: 4,
@@ -20,16 +20,35 @@ export async function perceptionNode(
   try {
     const useGridPerception = GRID_CONFIG.enabled && state.iteration_count > 0;
 
+    let perceptionResult;
     if (useGridPerception) {
       console.log("Using grid-based perception");
-      return await gridBasedPerception(state);
+      perceptionResult = await gridBasedPerception(state);
     } else {
       console.log("Using full-screen perception");
-      return await fullScreenPerception(state);
+      perceptionResult = await fullScreenPerception(state);
     }
+
+    if (perceptionResult.perception_result) {
+      const elementMap = new Map<string, [number, number, number, number]>();
+      perceptionResult.perception_result.elements.forEach((el: UIElement) => {
+        elementMap.set(el.elementId, el.bbox);
+      });
+
+      console.log(
+        `[Perception] Created element map with ${elementMap.size} entries`
+      );
+
+      return {
+        ...perceptionResult,
+        element_map: elementMap,
+      };
+    }
+
+    return perceptionResult;
   } catch (error) {
     const errorMsg = `Perception node error: ${error instanceof Error ? error.message : String(error)}`;
-    console.error(` ${errorMsg}`);
+    console.error(`${errorMsg}`);
 
     return {
       status: "failed",
@@ -46,7 +65,7 @@ async function fullScreenPerception(
   const screenshot = await captureScreenshot();
   if (!screenshot) {
     const error = "Failed to capture screenshot";
-    console.error(` ${error}`);
+    console.error(`${error}`);
     return {
       status: "failed",
       last_error: error,
@@ -57,18 +76,26 @@ async function fullScreenPerception(
 
   if (!perceptionResult.success) {
     const error = `Perception failed: ${perceptionResult.error}`;
-    console.error(` ${error}`);
+    console.error(`${error}`);
     return {
       status: "failed",
       last_error: error,
       errors: [...state.errors, error],
     };
   }
-  console.log(
-    `Successfully detected ${perceptionResult.elements.length} UI elements`
-  );
+
+  const elementsWithIds = perceptionResult.elements.map((el, index) => ({
+    ...el,
+    elementId: `elem_${state.iteration_count}_${index}`,
+  }));
+
+  console.log(`Successfully detected ${elementsWithIds.length} UI elements`);
+
   return {
-    perception_result: perceptionResult,
+    perception_result: {
+      ...perceptionResult,
+      elements: elementsWithIds,
+    },
     status: "running",
   };
 }
@@ -87,7 +114,7 @@ async function gridBasedPerception(
 
   if (!captureResult) {
     const error = "Failed to capture multi-region screenshot";
-    console.error(` ${error}`);
+    console.error(`${error}`);
     return {
       status: "failed",
       last_error: error,
@@ -98,7 +125,7 @@ async function gridBasedPerception(
   const perceptionResult = await callPerceptionApi(screenshot);
   if (!perceptionResult.success) {
     const error = `Perception failed: ${perceptionResult.error}`;
-    console.error(` ${error}`);
+    console.error(`${error}`);
     return {
       status: "failed",
       last_error: error,
@@ -109,13 +136,15 @@ async function gridBasedPerception(
   console.log(
     `Found ${perceptionResult.elements.length} elements in combined region`
   );
-  const transformedElements = perceptionResult.elements.map((el) => ({
+
+  const transformedElements = perceptionResult.elements.map((el, index) => ({
     ...el,
+    elementId: `elem_${state.iteration_count}_${index}`,
     bbox: multiRegionCoordsToScreen(el.bbox, regionBounds),
   }));
 
   console.log(
-    ` Transformed ${transformedElements.length} elements to screen coordinates`
+    `Transformed ${transformedElements.length} elements to screen coordinates`
   );
 
   return {
@@ -129,7 +158,6 @@ async function gridBasedPerception(
 }
 
 function selectTargetRegions(state: AgentState): number[] {
-  // Strategy 1: If we have previous action results, focus on nearby regions
   if (state.action_results && state.action_results.length > 0) {
     if (state.action_plan?.actions && state.action_plan.actions.length > 0) {
       const lastPlannedAction =
@@ -143,7 +171,7 @@ function selectTargetRegions(state: AgentState): number[] {
         );
 
         console.log(
-          ` Focusing on region ${targetRegion} and neighbors (from last action)`
+          `Focusing on region ${targetRegion} and neighbors (from last action)`
         );
         return getRegionWithNeighbors(
           targetRegion,
@@ -154,14 +182,12 @@ function selectTargetRegions(state: AgentState): number[] {
     }
   }
 
-  // Strategy 2: First iteration after full screen - analyze center regions
   if (state.iteration_count === 1) {
-    console.log(" First iteration - analyzing center regions");
+    console.log("First iteration - analyzing center regions");
     return getCenterRegions(GRID_CONFIG.rows, GRID_CONFIG.cols);
   }
 
-  //  analyze all regions fallback
-  console.log(" Fallback - analyzing all regions");
+  console.log("Fallback - analyzing all regions");
   const totalRegions = GRID_CONFIG.rows * GRID_CONFIG.cols;
   return Array.from({ length: totalRegions }, (_, i) => i);
 }
