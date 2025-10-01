@@ -1,5 +1,9 @@
 # InSpace Desktop
 
+## 📑 Idex 
+
+[System Diagrams](docs/diagrams.md)
+
 A modern desktop application built with:
 
 - **Electron.js** - Cross-platform desktop app framework

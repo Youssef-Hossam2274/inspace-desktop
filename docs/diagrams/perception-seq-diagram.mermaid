@@ -1,0 +1,29 @@
+sequenceDiagram
+    actor User
+    participant Workflow as ExecuteWorkflow
+    participant Graph as StateGraph
+    participant Perception as PerceptionNode
+    participant Screenshot as ScreenshotService
+    participant OmniAPI as OmniparserAPI
+
+    %% Initialization
+    User->>Workflow: start(userPrompt)
+    Workflow->>Graph: invoke(state)
+
+    %% Perception Phase
+    rect rgb(240, 248, 255)
+    Note over Graph,OmniAPI: Perception Phase
+    Graph->>Perception: execute(state)
+    
+    alt First iteration
+        Perception->>Screenshot: captureScreenshot()
+    else Subsequent iterations
+        Perception->>Screenshot: captureMultipleRegions(targetRegions)
+        Note right of Perception: Focus on 3x3 grid<br/>around last action
+    end
+    
+    Screenshot-->>Perception: screenshot (base64)
+    Perception->>OmniAPI: POST /parse (screenshot)
+    OmniAPI-->>Perception: UI elements with bboxes
+    Perception-->>Graph: perception_result
+    end
