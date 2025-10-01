@@ -48,7 +48,9 @@ async function captureScreenRegion(
   } catch (error) {
     try {
       fs.unlinkSync(tempFile);
-    } catch {}
+    } catch {
+      console.log("Something went wrong");
+    }
     throw error;
   }
 }

@@ -2,69 +2,22 @@ import { LLMContext, UIElementForLLM, ActionResult } from "../../agent/types";
 
 export class PromptBuilder {
   static buildSystemPrompt(): string {
-    return `You are a UI automation agent that generates action plans for testing user interfaces.
+    return `You are a UI automation agent that generates action plans for testing user interfaces and usecases.
 
 Your task is to analyze the current UI state and generate a structured action plan in JSON format to accomplish the user's goal.
 
 CRITICAL: You must respond with ONLY a valid JSON object. No explanations, no markdown, no text before or after - JUST the JSON object.
 
-## Available Actions
-
-You can use the following action types. Each action has specific parameters:
-
-1. **click** - Single click on an element
-   - target.elementId: string (required)
-   
-2. **double_click** - Double click on an element
-   - target.elementId: string (required)
-   
-3. **right_click** - Right click on an element
-   - target.elementId: string (required)
-   
-4. **move_mouse** - Move mouse to element without clicking
-   - target.elementId: string (required)
-   
-5. **type** - Type text into an input field
-   - target.elementId: string (required)
-   - parameters.text: string (required)
-   - parameters.clear_first: boolean (optional, default: false)
-   
-6. **key_press** - Press a single key
-   - parameters.key: string (required) - Examples: "Enter", "Escape", "Tab", "ArrowDown"
-   
-7. **key_combo** - Press key combination
-   - parameters.keys: string[] (required) - Example: ["Control", "c"] for copy
-   
-8. **clear_input** - Clear an input field
-   - target.elementId: string (required)
-   
-9. **scroll** - Scroll in a direction
-   - target.elementId: string (optional - scrolls entire page if omitted)
-   - parameters.direction: "up" | "down" | "left" | "right" (required)
-   - parameters.amount: number (required, in pixels)
-   
-10. **hover** - Hover over an element
-    - target.elementId: string (required)
-    
-11. **copy** - Copy content from element
-    - target.elementId: string (required)
-    
-12. **paste** - Paste content to element
-    - target.elementId: string (required)
-    
-13. **assert_text** - Verify element contains expected text
-    - target.elementId: string (required)
-    - parameters.expected_text: string (required)
-    
-14. **screenshot** - Take a screenshot
-    - target.elementId: string (optional - captures specific element if provided)
-    
-15. **wait** - Wait for specified duration
-    - parameters.duration: number (required, in milliseconds)
-    
-16. **drag_and_drop** - Drag element from one location to another
-    - parameters.from_elementId: string (required)
-    - parameters.to_elementId: string (required)
+Available Actions (all require target.elementId unless noted):
+- click, double_click, right_click, move_mouse, hover
+- type (+ parameters.text, clear_first)
+- key_press (parameters.key, no target) | key_combo (parameters.keys, no target)
+- wait (parameters.duration, no target)
+- scroll (optional target, + parameters.direction, amount)
+- clear_input, copy, paste
+- assert_text (+ parameters.expected_text)
+- drag_and_drop (parameters.from_elementId, to_elementId, no target)
+- screenshot (optional target)
 
 ## JSON Schema for ActionPlan
 
@@ -94,7 +47,7 @@ You can use the following action types. Each action has specific parameters:
       },
       "verify_immediately": "boolean - Whether to verify this action's result",
       "expected_outcome": {
-        "verification_type": "element_appears | text_present | element_disappears",
+        "verification_type": "element_visible | text_present | element_not_visible",
         "expected_content": ["string array of expected results"]
       }
     }
@@ -119,25 +72,7 @@ You can use the following action types. Each action has specific parameters:
     "on_element_not_found": "take_screenshot | retry | fail",
     "on_timeout": "retry | fail"
   }
-}
-
-## Important Guidelines
-
-1. **Element References**: Use elementId to reference UI elements. The bbox will be automatically resolved from the element mapping.
-
-2. **Action Selection**: Choose the most appropriate action type for each step. Be specific (e.g., use "double_click" when needed, not just "click").
-
-3. **Action Sequencing**: Keep actions atomic and sequential. Break complex tasks into simple steps.
-
-4. **Completion**: Set next_action to "complete" when the user's goal is fully achieved.
-
-5. **Continuation**: Set next_action to "continue" if you need another iteration to see updated UI state.
-
-6. **Element Matching**: Match elements by their exact elementId from the provided list. You can reference content for clarity but must use elementId.
-
-7. **Parameters**: Only include parameters relevant to the action type. Refer to the action list above for required parameters.
-
-8. **Verification**: Use verify_immediately for critical actions that should be checked before proceeding.`;
+}`;
   }
 
   static buildUserPrompt(

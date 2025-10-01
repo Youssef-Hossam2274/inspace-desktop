@@ -27,9 +27,10 @@ const TargetSchema = z.object({
     .optional()
     .describe("Element ID from the provided UI elements list"),
   bbox: z
-    .tuple([z.number(), z.number(), z.number(), z.number()])
+    .array(z.number())
+    .length(4)
     .optional()
-    .describe("Resolved bbox coordinates - will be filled automatically"),
+    .describe("Bounding box coordinates [x1, y1, x2, y2]"),
   content: z.string().optional().describe("Element content for reference"),
   type: z.string().optional().describe("Element type for reference"),
   region: z.string().optional().describe("Screen region description"),
@@ -77,11 +78,13 @@ const ParametersSchema = z
       .describe("Source element ID for drag"),
     to_elementId: z.string().optional().describe("Target element ID for drop"),
     from_bbox: z
-      .tuple([z.number(), z.number(), z.number(), z.number()])
+      .array(z.number())
+      .length(4)
       .optional()
       .describe("Resolved source bbox"),
     to_bbox: z
-      .tuple([z.number(), z.number(), z.number(), z.number()])
+      .array(z.number())
+      .length(4)
       .optional()
       .describe("Resolved target bbox"),
 
@@ -108,8 +111,8 @@ const ActionStepSchema = z.object({
   step_id: z.number().describe("Sequential step identifier"),
   action_type: ActionTypeEnum.describe("Type of action to perform"),
   description: z.string().describe("Human-readable description of the action"),
-  target: TargetSchema.describe("Target element for the action"),
-  parameters: ParametersSchema,
+  target: TargetSchema.optional().describe("Target element for the action"),
+  parameters: ParametersSchema.optional(),
   verify_immediately: z
     .boolean()
     .optional()
@@ -167,7 +170,7 @@ export const ActionPlanSchema = z.object({
   actions: z
     .array(ActionStepSchema)
     .describe("Array of sequential actions to perform"),
-  batch_verification: BatchVerificationSchema,
+  batch_verification: BatchVerificationSchema.optional(),
   next_action: z
     .enum(["continue", "complete", "pause", "retry"])
     .describe("What to do after this action plan"),

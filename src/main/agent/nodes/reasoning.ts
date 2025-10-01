@@ -24,6 +24,7 @@ export async function reasoningNode(
       state.user_prompt,
       state.action_results || []
     );
+    // const filteredElements = state.perception_result.elements;
     console.log(
       `Filtered to ${filteredElements.length} elements for LLM context`
     );
@@ -81,7 +82,7 @@ export async function reasoningNode(
         console.log(
           `Action ${action.step_id}: ${action.action_type} - ${action.description}`
         );
-        if (action.target.elementId) {
+        if (action.target?.elementId) {
           console.log(
             `  → Element: ${action.target.elementId} → bbox: ${action.target.bbox?.map((n) => n.toFixed(3)).join(",")}`
           );

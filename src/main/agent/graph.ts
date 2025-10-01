@@ -16,6 +16,7 @@ const GraphState = Annotation.Root({
   status: Annotation<"running" | "completed" | "failed">,
   errors: Annotation<string[]>,
   last_error: Annotation<string>,
+  element_map: Annotation<Map<string, [number, number, number, number]>>,
 });
 
 function shouldContinue(state: typeof GraphState.State): string {
@@ -127,6 +128,7 @@ export function createInitialState(
     status: "running",
     errors: [],
     last_error: "",
+    element_map: new Map(),
   };
 }
 
