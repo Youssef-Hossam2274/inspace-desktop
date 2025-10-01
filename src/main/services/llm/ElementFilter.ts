@@ -124,11 +124,6 @@ export class ElementFilter {
       score -= 20;
     }
 
-    // Bonus for elements with clear labels
-    if (this.hasActionableLabel(element.content)) {
-      score += 20;
-    }
-
     return score;
   }
 

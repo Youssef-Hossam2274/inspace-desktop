@@ -1,115 +1,65 @@
-import { StateGraph, Annotation } from "@langchain/langgraph";
+import fs from "fs";
 import { perceptionNode } from "./nodes/perception.js";
 import { reasoningNode } from "./nodes/reasoning.js";
-// import { actionNode } from "./nodes/action";
+import { actionNode } from "./nodes/action.js";
+import { verificationNode } from "./nodes/verification.js";
+import { GraphState } from "./GraphState.js";
+import { errorRecoveryNode } from "./nodes/error.js";
+import {
+  afterAction,
+  afterReasoning,
+  afterVerification,
+  afterErrorRecovery,
+} from "./nodes/conditional.js";
+import { StateGraph, Annotation } from "@langchain/langgraph";
+// import { drawGraph } from "@langchain/langgraph/dist/draw";
 
-// State Schema
-const GraphState = Annotation.Root({
-  user_prompt: Annotation<string>,
-  test_id: Annotation<string>,
-  current_screenshot: Annotation<any>,
-  perception_result: Annotation<any>,
-  action_plan: Annotation<any>,
-  action_results: Annotation<any[]>,
-  iteration_count: Annotation<number>,
-  max_iterations: Annotation<number>,
-  status: Annotation<"running" | "completed" | "failed">,
-  errors: Annotation<string[]>,
-  last_error: Annotation<string>,
-  element_map: Annotation<Map<string, [number, number, number, number]>>,
-});
-
-function shouldContinue(state: typeof GraphState.State): string {
-  console.log(
-    `Checking continue condition. Status: ${state.status}, Iteration: ${state.iteration_count}/${state.max_iterations}`
-  );
-  if (state.iteration_count >= state.max_iterations) {
-    console.log("Max iterations reached");
-    return "end";
-  }
-
-  if (state.status === "failed") {
-    console.log("Failed status detected");
-    return "end";
-  }
-
-  if (state.status === "completed") {
-    console.log("Completed status detected");
-    return "end";
-  }
-
-  if (state.action_plan?.next_action === "complete") {
-    console.log("Action plan indicates completion");
-    return "end";
-  }
-
-  if (state.action_plan?.next_action === "continue") {
-    console.log("Action plan indicates continue - taking new screenshot");
-    return "perception";
-  }
-
-  console.log("Continuing normal flow");
-  return "reasoning";
-}
-
-function checkActionResults(state: typeof GraphState.State): string {
-  console.log(
-    `Checking action results. Results count: ${state.action_results?.length || 0}`
-  );
-
-  if (!state.action_results || state.action_results.length === 0) {
-    console.log("No action results found");
-    return "end";
-  }
-
-  const failedActions = state.action_results.filter(
-    (result) => !result.success
-  );
-  if (failedActions.length > 0) {
-    console.log(`Found ${failedActions.length} failed actions`);
-    //  implement retry logic here
-    return "end";
-  }
-
-  console.log("[Graph] All actions succeeded, checking continuation");
-  return "continue_check";
-}
-
-// Create the workflow graph
-export function createAgentWorkflow() {
+export async function createAgentWorkflow() {
   const workflow = new StateGraph(GraphState)
     .addNode("perception", perceptionNode)
     .addNode("reasoning", reasoningNode)
-    // .addNode("action", actionNode)
-    .addEdge("perception", "reasoning")
-    // .addEdge("reasoning", "action")
-    // .addConditionalEdges(
-    //   "action",
-    //   checkActionResults,
-    //   {
-    //     "continue_check": "continue_check",
-    //     "end": "__end__"
-    //   }
-    // )
-    // .addConditionalEdges(
-    //   "continue_check",
-    //   shouldContinue,
-    //   {
-    //     "perception": "perception",
-    //     "reasoning": "reasoning",
-    //     "end": "__end__"
-    //   }
-    // )
-    // .addNode("continue_check", (state: typeof GraphState.State) => {
-    //   // This is just a pass-through node for conditional logic
-    //   console.log("[Graph] Continue check node");
-    //   return {
-    //     iteration_count: state.iteration_count + 1
-    //   };
-    // })
-    .setEntryPoint("perception");
+    .addNode("action", actionNode)
+    .addNode("verification", verificationNode)
+    .addNode("error_recovery", errorRecoveryNode)
 
-  return workflow.compile();
+    .setEntryPoint("perception")
+    .addEdge("perception", "reasoning")
+
+    // decide if we need verification first or go straight to action
+    .addConditionalEdges("reasoning", afterReasoning, {
+      verification: "verification",
+      action: "action",
+      end: "__end__",
+    })
+
+    // check if successful or needs recovery
+    .addConditionalEdges("action", afterAction, {
+      perception: "perception",
+      error_recovery: "error_recovery",
+      end: "__end__",
+    })
+
+    // After verification continue or recover
+    .addConditionalEdges("verification", afterVerification, {
+      perception: "perception",
+      error_recovery: "error_recovery",
+      end: "__end__",
+    })
+
+    // After error recovery: retry or give up
+    .addConditionalEdges("error_recovery", afterErrorRecovery, {
+      perception: "perception",
+      end: "__end__",
+    });
+
+  const compiled = workflow.compile();
+  const graphObj = compiled.getGraph();
+  const mermaidSource = graphObj.drawMermaid();
+  fs.writeFileSync("workflow.mmd", mermaidSource);
+  console.log(
+    "Saved workflow.mmd. Open it in VSCode Mermaid extension or any Mermaid live editor."
+  );
+  return compiled;
 }
 
 export function createInitialState(
@@ -129,6 +79,9 @@ export function createInitialState(
     errors: [],
     last_error: "",
     element_map: new Map(),
+    retry_count: 0,
+    max_retries: 3,
+    verification_needed: false,
   };
 }
 
@@ -142,11 +95,14 @@ export async function executeAgentWorkflow(
   const initialState = createInitialState(userPrompt, testId);
 
   try {
-    const result = await graph.invoke(initialState);
-    console.log("Workflow completed successfully");
+    const result = await (await graph).invoke(initialState);
+    console.log("[Graph] Workflow completed successfully");
+    console.log(`[Graph] Final status: ${result.status}`);
+    console.log(`[Graph] Total iterations: ${result.iteration_count}`);
+    console.log(`[Graph] Total errors: ${result.errors?.length || 0}`);
     return result;
   } catch (error) {
-    console.error("Workflow failed:", error);
+    console.error("[Graph] Workflow failed with exception:", error);
     throw error;
   }
 }

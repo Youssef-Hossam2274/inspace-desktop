@@ -24,7 +24,6 @@ export async function reasoningNode(
       state.user_prompt,
       state.action_results || []
     );
-    // const filteredElements = state.perception_result.elements;
     console.log(
       `Filtered to ${filteredElements.length} elements for LLM context`
     );

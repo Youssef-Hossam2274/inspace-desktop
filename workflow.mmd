@@ -1,0 +1,25 @@
+%%{init: {'flowchart': {'curve': 'linear'}}}%%
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	perception(perception)
+	reasoning(reasoning)
+	action(action)
+	verification(verification)
+	error_recovery(error_recovery)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> perception;
+	perception --> reasoning;
+	reasoning -.-> verification;
+	reasoning -.-> action;
+	reasoning -. &nbsp;end&nbsp; .-> __end__;
+	action -.-> perception;
+	action -.-> error_recovery;
+	action -. &nbsp;end&nbsp; .-> __end__;
+	verification -.-> perception;
+	verification -.-> error_recovery;
+	verification -. &nbsp;end&nbsp; .-> __end__;
+	error_recovery -.-> perception;
+	error_recovery -. &nbsp;end&nbsp; .-> __end__;
+	classDef default fill:#f2f0ff,line-height:1.2;
+	classDef first fill-opacity:0;
+	classDef last fill:#bfb6fc;
