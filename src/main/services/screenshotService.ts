@@ -5,7 +5,6 @@ import { Screenshot } from "../agent/types";
 import { screen } from "@nut-tree-fork/nut-js";
 import { PNG } from "pngjs";
 
-// Helper function to capture full screen and crop a region
 async function captureScreenRegion(
   x: number,
   y: number,
@@ -15,23 +14,16 @@ async function captureScreenRegion(
   const tempFile = path.join(os.tmpdir(), `screenshot_${Date.now()}.png`);
 
   try {
-    // Capture full screen
     await screen.capture(tempFile);
-
-    // Read and parse the PNG
     const fullScreenBuffer = fs.readFileSync(tempFile);
     const fullScreenPng = PNG.sync.read(fullScreenBuffer);
-
-    // Create a new PNG for the cropped region
     const croppedPng = new PNG({ width, height });
 
-    // Copy pixels from the specified region
     for (let dy = 0; dy < height; dy++) {
       for (let dx = 0; dx < width; dx++) {
         const srcX = x + dx;
         const srcY = y + dy;
 
-        // Check bounds
         if (
           srcX >= 0 &&
           srcX < fullScreenPng.width &&
@@ -50,18 +42,13 @@ async function captureScreenRegion(
     }
 
     const croppedBuffer = PNG.sync.write(croppedPng);
-
-    // Clean up temp file
     fs.unlinkSync(tempFile);
 
     return { buffer: croppedBuffer, actualWidth: width, actualHeight: height };
   } catch (error) {
-    // Clean up temp file in case of error
     try {
       fs.unlinkSync(tempFile);
-    } catch {
-      // Ignore cleanup errors
-    }
+    } catch {}
     throw error;
   }
 }
@@ -75,7 +62,6 @@ export async function captureScreenshot(): Promise<Screenshot | null> {
     console.log(`Screen size: ${screenWidth}x${screenHeight}`);
     const img = await screen.capture("screenshot.png");
 
-    // Read the captured image file and convert to base64
     const fs = await import("fs");
     const imageBuffer = fs.readFileSync(img);
     const base64 = imageBuffer.toString("base64");

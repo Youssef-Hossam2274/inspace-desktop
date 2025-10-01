@@ -8,11 +8,19 @@ export interface Screenshot {
 }
 
 export interface UIElement {
-  bbox: [number, number, number, number]; // [x1, y1, x2, y2] normalized coordinates
+  elementId: string;
+  bbox: [number, number, number, number];
   content: string;
   type: string;
+  interactivity: boolean;
   confidence?: number;
-  interactivity?: boolean;
+}
+
+export interface UIElementForLLM {
+  elementId: string;
+  content: string;
+  type: string;
+  interactivity: boolean;
 }
 
 export interface PerceptionResult {
@@ -22,22 +30,62 @@ export interface PerceptionResult {
   error?: string;
 }
 
+export type ActionType =
+  | "click"
+  | "double_click"
+  | "right_click"
+  | "move_mouse"
+  | "type"
+  | "key_press"
+  | "key_combo"
+  | "clear_input"
+  | "scroll"
+  | "hover"
+  | "copy"
+  | "paste"
+  | "assert_text"
+  | "screenshot"
+  | "wait"
+  | "drag_and_drop"
+  | "custom_action";
+
 export interface ActionStep {
   step_id: number;
-  action_type: "click" | "type" | "scroll" | "wait" | "screenshot";
+  action_type: ActionType;
   description: string;
   target: {
+    elementId?: string;
     bbox?: [number, number, number, number];
     content?: string;
     type?: string;
     region?: string;
   };
   parameters?: {
+    // Type action
     text?: string;
     clear_first?: boolean;
+
+    // Scroll action
     direction?: "up" | "down" | "left" | "right";
     amount?: number;
+
+    // Wait action
     duration?: number;
+
+    // Key actions
+    key?: string;
+    keys?: string[];
+
+    // Assert action
+    expected_text?: string;
+
+    // Drag and drop
+    from_elementId?: string;
+    to_elementId?: string;
+    from_bbox?: [number, number, number, number];
+    to_bbox?: [number, number, number, number];
+
+    actions?: object[];
   };
   verify_immediately?: boolean;
   expected_outcome?: {
@@ -92,6 +140,7 @@ export interface AgentState {
   perception_result?: PerceptionResult;
   action_plan?: ActionPlan;
   action_results?: ActionResult[];
+  element_map?: Map<string, [number, number, number, number]>;
 
   // Loop control
   iteration_count: number;
@@ -112,7 +161,7 @@ export interface NodeResult {
 
 export interface LLMContext {
   user_prompt: string;
-  current_elements: UIElement[];
+  current_elements: UIElementForLLM[];
   iteration_count: number;
   previous_actions: ActionResult[];
   test_id: string;

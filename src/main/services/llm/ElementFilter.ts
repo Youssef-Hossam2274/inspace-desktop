@@ -1,4 +1,4 @@
-import { UIElement, ActionResult } from "../../agent/types";
+import { UIElement, UIElementForLLM, ActionResult } from "../../agent/types";
 import { LLM_API_CONFIG } from "../../config/LLMConfig.js";
 
 export class ElementFilter {
@@ -40,32 +40,48 @@ export class ElementFilter {
     userPrompt: string,
     previousActions: ActionResult[],
     maxElements: number = LLM_API_CONFIG.maxElements
-  ): UIElement[] {
+  ): UIElementForLLM[] {
     console.log(`[ElementFilter] Filtering ${elements.length} elements...`);
 
-    // Extract keywords from prompt
     const keywords = this.extractKeywords(userPrompt);
     console.log(`[ElementFilter] Keywords: ${keywords.join(", ")}`);
 
-    // Score and sort elements
     const scoredElements = elements.map((el) => ({
       element: el,
       score: this.calculateRelevanceScore(el, keywords, previousActions),
     }));
 
-    // Sort by score (descending)
     scoredElements.sort((a, b) => b.score - a.score);
 
-    // Take top N elements
     const filtered = scoredElements
       .slice(0, maxElements)
-      .map((se) => se.element);
+      .map((se) => this.toSimplifiedElement(se.element));
 
     console.log(
       `[ElementFilter] Filtered to ${filtered.length} most relevant elements`
     );
+    console.log(
+      `[ElementFilter] Token savings: ~${this.estimateTokenSavings(elements.length, filtered.length)} tokens`
+    );
 
     return filtered;
+  }
+
+  private static toSimplifiedElement(element: UIElement): UIElementForLLM {
+    return {
+      elementId: element.elementId,
+      content: element.content,
+      type: element.type,
+      interactivity: element.interactivity ?? false,
+    };
+  }
+
+  private static estimateTokenSavings(
+    totalElements: number,
+    filteredElements: number
+  ): number {
+    const tokensPerBbox = 12;
+    return filteredElements * tokensPerBbox;
   }
 
   private static extractKeywords(prompt: string): string[] {
@@ -108,6 +124,11 @@ export class ElementFilter {
       score -= 20;
     }
 
+    // Bonus for elements with clear labels
+    if (this.hasActionableLabel(element.content)) {
+      score += 20;
+    }
+
     return score;
   }
 
@@ -115,8 +136,35 @@ export class ElementFilter {
     if (element.interactivity === true) {
       return true;
     }
-    // Fallback
+
     const type = element.type.toLowerCase();
     return this.INTERACTIVE_TYPES.some((t) => type.includes(t));
+  }
+
+  private static hasActionableLabel(content: string): boolean {
+    const actionWords = [
+      "submit",
+      "send",
+      "save",
+      "delete",
+      "edit",
+      "create",
+      "add",
+      "remove",
+      "cancel",
+      "confirm",
+      "login",
+      "logout",
+      "sign",
+      "register",
+      "search",
+      "filter",
+      "sort",
+      "upload",
+      "download",
+    ];
+
+    const lowerContent = content.toLowerCase();
+    return actionWords.some((word) => lowerContent.includes(word));
   }
 }
