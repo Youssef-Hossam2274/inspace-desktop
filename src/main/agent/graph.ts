@@ -11,8 +11,7 @@ import {
   afterVerification,
   afterErrorRecovery,
 } from "./nodes/conditional.js";
-import { StateGraph, Annotation } from "@langchain/langgraph";
-// import { drawGraph } from "@langchain/langgraph/dist/draw";
+import { StateGraph } from "@langchain/langgraph";
 
 export async function createAgentWorkflow() {
   const workflow = new StateGraph(GraphState)
@@ -89,20 +88,20 @@ export async function executeAgentWorkflow(
   userPrompt: string,
   testId?: string
 ) {
-  console.log(`[Graph] Starting agent workflow for prompt: "${userPrompt}"`);
+  console.log(`Starting agent workflow for prompt: "${userPrompt}"`);
 
   const graph = createAgentWorkflow();
   const initialState = createInitialState(userPrompt, testId);
 
   try {
     const result = await (await graph).invoke(initialState);
-    console.log("[Graph] Workflow completed successfully");
-    console.log(`[Graph] Final status: ${result.status}`);
-    console.log(`[Graph] Total iterations: ${result.iteration_count}`);
-    console.log(`[Graph] Total errors: ${result.errors?.length || 0}`);
+    console.log("Workflow completed successfully");
+    console.log(`Final status: ${result.status}`);
+    console.log(`Total iterations: ${result.iteration_count}`);
+    console.log(`Total errors: ${result.errors?.length || 0}`);
     return result;
   } catch (error) {
-    console.error("[Graph] Workflow failed with exception:", error);
+    console.error("Workflow failed with exception:", error);
     throw error;
   }
 }
