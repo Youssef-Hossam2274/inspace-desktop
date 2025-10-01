@@ -207,6 +207,25 @@
     width: 44px;
     height: 44px;
   }
+
+  .actionsContainer {
+    max-width: 90%;
+  }
+
+  .actionsButtonContainer {
+    max-width: 90%;
+  }
+
+  .actionButtons {
+    flex-direction: column;
+    gap: spacing(2);
+  }
+
+  .actionButton {
+    width: 100%;
+    text-align: center;
+    padding: spacing(3) spacing(4);
+  }
 }
 
 @include media-down(sm) {
@@ -246,6 +265,39 @@
       height: 16px;
     }
   }
+
+  .actionsContainer {
+    max-width: 95%;
+  }
+
+  .actionsButtonContainer {
+    max-width: 95%;
+  }
+
+  .actionsList {
+    .actionItem {
+      font-size: $font-size-xs;
+    }
+  }
+
+  .actionItemInline {
+    font-size: $font-size-xs;
+  }
+
+  .actionButton {
+    padding: spacing(2) spacing(3);
+    font-size: $font-size-xs;
+
+    .buttonIcon {
+      width: 14px;
+      height: 14px;
+    }
+  }
+
+  .statusIcon {
+    width: 14px;
+    height: 14px;
+  }
 }
 
 // Loading state for messages
@@ -269,6 +321,216 @@
       );
       animation: shimmer 1.5s infinite;
     }
+  }
+}
+
+// Actions container
+.actionsContainer {
+  margin-top: spacing(3);
+  padding: spacing(3);
+  background: $bg-tertiary;
+  border: 1px solid $border-secondary;
+  border-radius: radius(lg);
+  max-width: 70%;
+}
+
+.actionsList {
+  margin-bottom: spacing(3);
+
+  .actionItem {
+    padding: spacing(1) 0;
+    color: $text-secondary;
+    font-size: $font-size-sm;
+    line-height: $line-height-relaxed;
+  }
+}
+
+// Actions within message content
+.actionsInMessage {
+  margin-top: spacing(4);
+  padding-top: spacing(3);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.actionsTitle {
+  font-weight: $font-weight-semibold;
+  color: $text-primary;
+  margin-bottom: spacing(2);
+  font-size: $font-size-sm;
+}
+
+.actionItemInline {
+  padding: spacing(1) 0;
+  color: $text-secondary;
+  font-size: $font-size-sm;
+  line-height: $line-height-relaxed;
+  padding-left: spacing(2);
+}
+
+// Actions container (for buttons and status)
+.actionsButtonContainer {
+  // margin-top: spacing(3);
+  max-width: 70%;
+}
+
+.actionButtons {
+  display: flex;
+  gap: spacing(3);
+  justify-content: flex-start;
+  margin-top: spacing(3);
+  padding: spacing(3);
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: radius(lg);
+  border: 1px solid $border-tertiary;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  gap: spacing(2);
+  padding: spacing(2) spacing(4);
+  border-radius: radius(md);
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  cursor: pointer;
+  @include transition(all, 0.2s, ease-out);
+  border: 2px solid transparent;
+  position: relative;
+  overflow: hidden;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+
+  // Subtle glow effect
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.1),
+      transparent
+    );
+    @include transition(left, 0.5s, ease-out);
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+
+    &::before {
+      left: 100%;
+    }
+  }
+
+  &:active {
+    transform: translateY(-1px);
+    @include transition(transform, 0.1s, ease-out);
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px $focus-ring;
+  }
+}
+
+.buttonIcon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.allowButton {
+  background: linear-gradient(135deg, $success-color, #22c55e);
+  color: white;
+  border-color: $success-color;
+  box-shadow: 0 4px 12px rgba($success-color, 0.3);
+
+  &:hover {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    border-color: #22c55e;
+    box-shadow: 0 8px 20px rgba($success-color, 0.4);
+  }
+
+  &:active {
+    background: linear-gradient(135deg, #16a34a, #15803d);
+  }
+}
+
+.denyButton {
+  background: linear-gradient(135deg, $error-color, #dc2626);
+  color: white;
+  border-color: $error-color;
+  box-shadow: 0 4px 12px rgba($error-color, 0.3);
+
+  &:hover {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    border-color: #dc2626;
+    box-shadow: 0 8px 20px rgba($error-color, 0.4);
+  }
+
+  &:active {
+    background: linear-gradient(135deg, #b91c1c, #991b1b);
+  }
+}
+
+.statusIndicator {
+  display: flex;
+  align-items: center;
+  gap: spacing(2);
+  padding: spacing(3) spacing(4);
+  border-radius: radius(lg);
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  background: $info-color-bg;
+  color: $info-color;
+  border: 1px solid rgba($info-color, 0.2);
+  animation: fadeInUp 0.3s ease-out;
+
+  &.completed {
+    background: $success-color-bg;
+    color: $success-color;
+    border-color: rgba($success-color, 0.2);
+  }
+
+  &.denied {
+    background: $error-color-bg;
+    color: $error-color;
+    border-color: rgba($error-color, 0.2);
+  }
+}
+
+.statusIcon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.loadingSpinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: radius(full);
+  animation: spin 1s linear infinite;
+  flex-shrink: 0;
+}
+
+.loadingMessage {
+  display: flex;
+  align-items: center;
+  gap: spacing(3);
+  background: $bg-tertiary !important;
+  color: $text-secondary !important;
+  font-style: italic;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 

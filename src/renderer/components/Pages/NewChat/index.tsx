@@ -7,11 +7,14 @@ interface Message {
   content: string;
   timestamp: Date;
   sender: "user" | "assistant";
+  actions?: string[];
+  status?: "pending" | "approved" | "denied" | "executing" | "completed";
 }
 
 const NewChat: FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [showScrollButton, setShowScrollButton] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
@@ -45,7 +48,7 @@ const NewChat: FC = () => {
     if (!isAtBottom()) {
       scrollToBottom();
     }
-  }, [messages]);
+  }, [messages, isLoading]);
 
   // Add scroll event listener
   useEffect(() => {
@@ -56,8 +59,94 @@ const NewChat: FC = () => {
     }
   }, [handleScroll]);
 
-  const handleExcuteActions = async () => {
-    // Execute nut.js functionality - move mouse and take screenshot
+  const handleAllowActions = async (messageId: string) => {
+    // Update message status to executing
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === messageId ? { ...msg, status: "executing" } : msg
+      )
+    );
+
+    // Hide window and execute actions
+    // await window.electronAPI.hideWindow();
+
+    try {
+      // Here you would execute the actual actions
+      // For now, we'll simulate with a timeout
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // Update message status to completed
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === messageId ? { ...msg, status: "completed" } : msg
+        )
+      );
+    } catch (error) {
+      console.error("Error executing actions:", error);
+      // Update message status back to pending on error
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === messageId ? { ...msg, status: "pending" } : msg
+        )
+      );
+    } finally {
+      // Show window again
+      await window.electronAPI.showWindow();
+    }
+  };
+
+  const handleDenyActions = (messageId: string) => {
+    // Update message status to denied
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === messageId ? { ...msg, status: "denied" } : msg
+      )
+    );
+  };
+
+  const handleExcuteCua = async (prompt: string, status: string) => {
+    console.log(prompt, status);
+    if (status === "completed" || status === "error" || status === "failed")
+      return;
+
+    try {
+      const result = await window.electronAPI.executePrompt(prompt);
+      console.log(result);
+      const status = result?.result?.status || "pending";
+      // Create assistant message with action plan
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content:
+          status === "failed"
+            ? "I encountered an error"
+            : "I will perform the following actions:",
+        timestamp: new Date(),
+        sender: "assistant",
+        actions: result?.result?.action_plan?.map((plan: any) => {
+          return plan?.description;
+        }),
+        status: "pending",
+      };
+
+      setMessages((prev) => [...prev, assistantMessage]);
+
+      return await handleExcuteCua(prompt, status);
+    } catch (error) {
+      console.error("Error executing prompt:", error);
+
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: "Sorry, I encountered an error processing your request.",
+        timestamp: new Date(),
+        sender: "assistant",
+      };
+
+      setMessages((prev) => [...prev, errorMessage]);
+      return await handleExcuteCua(prompt, "error");
+    } finally {
+      setIsLoading(false);
+      await window.electronAPI.showWindow();
+    }
   };
 
   const handleSendMessage = async (content: string) => {
@@ -69,31 +158,10 @@ const NewChat: FC = () => {
     };
 
     setMessages((prev) => [...prev, newMessage]);
+    setIsLoading(true);
 
-    // Always scroll to bottom when user sends a message
-    // window.setTimeout(() => scrollToBottom(), 100);
-
-    // Hide the window before executing the prompt
-    await window.electronAPI.hideWindow();
-
-    // Here you would typically send the message to your AI service
-    // For now, we'll just add a mock response
-    window.setTimeout(async () => {
-      const responseMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: "I received your message: " + content,
-        timestamp: new Date(),
-        sender: "assistant",
-      };
-      setMessages((prev) => [...prev, responseMessage]);
-      const result = await window.electronAPI.executePrompt(content);
-      console.log(result);
-      // Scroll to bottom when response arrives
-      // window.setTimeout(() => scrollToBottom(), 100);
-      handleExcuteActions();
-      // Show the window after execution is complete
-      await window.electronAPI.showWindow();
-    }, 1000);
+    // await window.electronAPI.hideWindow();
+    await handleExcuteCua(content, "pending");
   };
 
   return (
@@ -115,12 +183,132 @@ const NewChat: FC = () => {
                     : styles.assistantMessage
                 }`}
               >
-                <div className={styles.messageContent}>{message.content}</div>
+                <div className={styles.messageContent}>
+                  {message.content}
+
+                  {/* Show actions inline for assistant messages */}
+                  {message.sender === "assistant" && message.actions && (
+                    <div className={styles.actionsInMessage}>
+                      <div className={styles.actionsTitle}>
+                        Planned Actions:
+                      </div>
+                      {message.actions.map((action, index) => (
+                        <div key={index} className={styles.actionItemInline}>
+                          {index + 1}. {action}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Show action buttons if this is an assistant message with actions */}
+                {message.sender === "assistant" && message.actions && (
+                  <div className={styles.actionsButtonContainer}>
+                    {/* Show buttons based on status */}
+                    {message.status === "pending" && (
+                      <div className={styles.actionButtons}>
+                        <button
+                          className={`${styles.actionButton} ${styles.allowButton}`}
+                          onClick={() => handleAllowActions(message.id)}
+                        >
+                          <svg
+                            className={styles.buttonIcon}
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          Allow Actions
+                        </button>
+                        <button
+                          className={`${styles.actionButton} ${styles.denyButton}`}
+                          onClick={() => handleDenyActions(message.id)}
+                        >
+                          <svg
+                            className={styles.buttonIcon}
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          Deny Actions
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Show status indicators */}
+                    {message.status === "executing" && (
+                      <div className={styles.statusIndicator}>
+                        <div className={styles.loadingSpinner}></div>
+                        <span>Executing actions...</span>
+                      </div>
+                    )}
+
+                    {message.status === "completed" && (
+                      <div
+                        className={`${styles.statusIndicator} ${styles.completed}`}
+                      >
+                        <svg
+                          className={styles.statusIcon}
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        Actions completed successfully
+                      </div>
+                    )}
+
+                    {message.status === "denied" && (
+                      <div
+                        className={`${styles.statusIndicator} ${styles.denied}`}
+                      >
+                        <svg
+                          className={styles.statusIcon}
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        Actions denied by user
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <div className={styles.messageTime}>
                   {message.timestamp.toLocaleTimeString()}
                 </div>
               </div>
             ))}
+
+            {/* Loading indicator for new messages */}
+            {isLoading && (
+              <div className={`${styles.message} ${styles.assistantMessage}`}>
+                <div
+                  className={`${styles.messageContent} ${styles.loadingMessage}`}
+                >
+                  <div className={styles.loadingSpinner}></div>
+                  <span>Thinking...</span>
+                </div>
+              </div>
+            )}
 
             {/* Invisible element to scroll to */}
             <div ref={messagesEndRef} />
@@ -154,6 +342,7 @@ const NewChat: FC = () => {
         <ChatInput
           onSendMessage={handleSendMessage}
           placeholder="Ask me anything..."
+          disabled={isLoading}
         />
       </div>
     </div>
