@@ -10,4 +10,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
   executePrompt: (userPrompt: string) =>
     ipcRenderer.invoke("execute-prompt", userPrompt),
   cuaActions: (params: any) => ipcRenderer.invoke("cua-actions", params),
+  hideWindow: () => ipcRenderer.invoke("hide-window"),
+  showWindow: () => ipcRenderer.invoke("show-window"),
 });

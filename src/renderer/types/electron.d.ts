@@ -10,6 +10,8 @@ export interface IElectronAPI {
   platform: string;
   executePrompt: (userPrompt: string) => any;
   cuaActions: (params: CUAActionOptions) => Promise<NutJSResult>;
+  hideWindow: () => Promise<void>;
+  showWindow: () => Promise<void>;
 }
 
 declare global {

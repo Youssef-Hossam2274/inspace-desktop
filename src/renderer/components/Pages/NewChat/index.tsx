@@ -60,7 +60,7 @@ const NewChat: FC = () => {
     // Execute nut.js functionality - move mouse and take screenshot
   };
 
-  const handleSendMessage = (content: string) => {
+  const handleSendMessage = async (content: string) => {
     const newMessage: Message = {
       id: Date.now().toString(),
       content,
@@ -72,6 +72,9 @@ const NewChat: FC = () => {
 
     // Always scroll to bottom when user sends a message
     // window.setTimeout(() => scrollToBottom(), 100);
+
+    // Hide the window before executing the prompt
+    await window.electronAPI.hideWindow();
 
     // Here you would typically send the message to your AI service
     // For now, we'll just add a mock response
@@ -88,6 +91,8 @@ const NewChat: FC = () => {
       // Scroll to bottom when response arrives
       // window.setTimeout(() => scrollToBottom(), 100);
       handleExcuteActions();
+      // Show the window after execution is complete
+      await window.electronAPI.showWindow();
     }, 1000);
   };
 
