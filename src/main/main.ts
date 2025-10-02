@@ -1,47 +1,140 @@
-import * as path from 'path';
-import { app, BrowserWindow } from 'electron';
+import * as path from "path";
+import { fileURLToPath } from "url";
+import { app, BrowserWindow, ipcMain } from "electron";
+import { cuaActions } from "./NutActions/index.js";
+import { executeAgentWorkflow } from "./agent/graph.js";
 
-const isDev = process.env.NODE_ENV === 'development';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const isDev = process.env.NODE_ENV === "development";
+
+let mainWindow: BrowserWindow | null = null;
+let approvalResolve:
+  | ((decision: "approve" | "retry" | "abort") => void)
+  | null = null;
 
 function createWindow(): void {
-  // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     height: 800,
     width: 1200,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, '../preload/preload.js'),
+      preload: path.join(__dirname, "../preload/preload.js"),
     },
   });
 
-  // Load the app
   if (isDev) {
-    mainWindow.loadURL('http://localhost:3000');
+    mainWindow.loadURL("http://localhost:3000");
     mainWindow.webContents.openDevTools();
   } else {
-    mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
+    mainWindow.loadFile(path.join(__dirname, "../renderer/index.html"));
   }
 }
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
 app.whenReady().then(createWindow);
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") {
     app.quit();
   }
 });
 
-app.on('activate', () => {
-  // On macOS it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
+app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
+  }
+});
+
+ipcMain.handle("execute-prompt", async (event, userPrompt: string) => {
+  console.log("[MAIN] Received execute-prompt:", userPrompt);
+
+  try {
+    const result = await executeAgentWorkflow(
+      userPrompt,
+      undefined,
+      async (state) => {
+        // This callback is called when approval is needed
+        console.log("[MAIN] Approval needed, sending to renderer...");
+
+        // SHOW WINDOW when approval is needed
+        if (mainWindow) {
+          mainWindow.show();
+          mainWindow.focus();
+        }
+
+        // Send approval request to renderer with action plan details
+        mainWindow?.webContents.send("approval-needed", {
+          actionPlan: state.action_plan,
+          iteration: state.iteration_count,
+        });
+
+        // Wait for user decision
+        return new Promise<"approve" | "retry" | "abort">((resolve) => {
+          approvalResolve = resolve;
+        });
+      }
+    );
+
+    // Show window at the end too
+    if (mainWindow) {
+      mainWindow.show();
+      mainWindow.focus();
+    }
+
+    return {
+      success: result.status === "completed",
+      result,
+      error: result.status === "failed" ? result.last_error : undefined,
+    };
+  } catch (error) {
+    console.error("[MAIN] Workflow error:", error);
+    if (mainWindow) {
+      mainWindow.show();
+      mainWindow.focus();
+    }
+
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
+});
+
+// Handle approval decision from renderer
+ipcMain.handle(
+  "approval-decision",
+  async (event, decision: "approve" | "retry" | "abort") => {
+    console.log("[MAIN] Received approval decision:", decision);
+
+    if (approvalResolve) {
+      approvalResolve(decision);
+      approvalResolve = null;
+
+      // Hide window after decision is made
+      if (mainWindow) {
+        mainWindow.hide();
+      }
+    } else {
+      console.error("[MAIN] No approval resolver available!");
+    }
+  }
+);
+
+ipcMain.handle("cua-actions", cuaActions);
+ipcMain.handle("abort-execution", async () => {
+  console.log("[IPC] Abort execution requested");
+  return { success: true };
+});
+ipcMain.handle("hide-window", () => {
+  if (mainWindow) {
+    mainWindow.hide();
+  }
+});
+
+ipcMain.handle("show-window", () => {
+  if (mainWindow) {
+    mainWindow.show();
   }
 });

@@ -1,0 +1,22 @@
+sequenceDiagram
+    participant Graph as StateGraph
+    participant Reasoning as ReasoningNode
+    participant LLM as LLMService
+    participant GroqAPI as GroqAPI
+
+    %% Reasoning Phase
+    rect rgb(255, 250, 240)
+    Note over Graph,GroqAPI: Reasoning Phase
+    Graph->>Reasoning: execute(state)
+    Reasoning->>LLM: generateActionPlan(elements, prompt)
+    
+    LLM->>LLM: filterElements(top 50)
+    Note right of LLM: Score by:<br/>Interactive +100<br/>Keyword match +50
+    
+    LLM->>LLM: buildPrompt(filteredElements)
+    LLM->>GroqAPI: POST /chat/completions
+    GroqAPI-->>LLM: ActionPlan JSON
+    
+    LLM-->>Reasoning: ActionPlan{actions[], next_action}
+    Reasoning-->>Graph: action_plan
+    end

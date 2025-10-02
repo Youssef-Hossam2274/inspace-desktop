@@ -1,15 +1,16 @@
 {
   "name": "inspace-desktop",
   "version": "1.0.0",
+  "type": "module",
   "description": "A desktop application built with Electron, React, TypeScript, and SCSS",
   "main": "./dist/main/main.js",
   "homepage": "./",
   "scripts": {
     "build:main": "tsc -p tsconfig.main.json",
-    "build:renderer": "webpack --mode production",
-    "build:preload": "tsc src/preload/preload.ts --outDir dist/preload --target ES2020 --module commonjs",
+    "build:renderer": "vite build",
+    "build:preload": "tsc -p tsconfig.preload.json",
     "build": "npm run build:main && npm run build:preload && npm run build:renderer",
-    "start:renderer": "webpack serve --mode development",
+    "start:renderer": "vite",
     "start:main": "cross-env NODE_ENV=development electron .",
     "start": "concurrently \"npm run start:renderer\" \"wait-on http://localhost:3000 && npm run start:main\"",
     "dev": "npm run start",
@@ -18,7 +19,8 @@
     "prepare": "husky install",
     "prestart": "npm run build:main && npm run build:preload",
     "prebuild": "npm run lint",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "format": "prettier --write ."
   },
   "keywords": [
     "electron",
@@ -30,36 +32,42 @@
   "author": "InSpace Desktop Team",
   "license": "ISC",
   "dependencies": {
+    "@instructor-ai/instructor": "^1.7.0",
+    "@langchain/langgraph": "^0.4.9",
+    "@nut-tree-fork/nut-js": "^4.2.6",
+    "groq-sdk": "^0.33.0",
+    "lucide-react": "^0.544.0",
+    "pngjs": "^7.0.0",
+    "prettier": "^3.6.2",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.9.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
     "@types/node": "^24.5.2",
+    "@types/pngjs": "^6.0.5",
     "@types/react": "^18.3.16",
     "@types/react-dom": "^18.3.5",
     "@typescript-eslint/eslint-plugin": "^8.44.1",
     "@typescript-eslint/parser": "^8.44.1",
+    "@vitejs/plugin-react": "^5.0.4",
     "concurrently": "^9.2.1",
     "cross-env": "^10.0.0",
-    "css-loader": "^7.1.2",
     "electron": "^38.1.2",
+    "electron-builder": "^26.0.12",
     "eslint": "^9.36.0",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
-    "html-webpack-plugin": "^5.6.4",
     "husky": "^9.0.0",
     "lint-staged": "^15.0.0",
     "sass": "^1.93.2",
-    "sass-loader": "^16.0.5",
-    "style-loader": "^4.0.0",
-    "ts-loader": "^9.5.4",
-    "typescript": "^5.7.3",
-    "wait-on": "^9.0.1",
-    "webpack": "^5.101.3",
-    "webpack-cli": "^6.0.1",
-    "webpack-dev-server": "^5.2.2"
+    "ts-node": "^10.9.2",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.7",
+    "wait-on": "^9.0.1"
   },
   "lint-staged": {
     "src/**/*.{ts,tsx}": [

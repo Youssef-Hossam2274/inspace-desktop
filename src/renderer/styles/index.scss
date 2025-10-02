@@ -1,14 +1,5 @@
-@use "sass:color";
+@import "./themes";
 
-// Variables
-$primary-color: #007acc;
-$secondary-color: #f0f0f0;
-$text-color: #333;
-$bg-color: #ffffff;
-$border-radius: 8px;
-$box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-
-// Reset and base styles
 * {
   margin: 0;
   padding: 0;
@@ -17,75 +8,75 @@ $box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: $font-family-primary;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: $bg-color;
-  color: $text-color;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  @include custom-scrollbar;
 }
 
 // App component styles
 .app {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-
   &-header {
-    background: linear-gradient(135deg, $primary-color, color.adjust($primary-color, $lightness: 10%));
-    color: white;
-    padding: 2rem;
-    text-align: center;
-    box-shadow: $box-shadow;
+    background: $gradient-primary;
+    color: var(--text-inverse);
+    padding: spacing(6) spacing(8);
+    box-shadow: var(--shadow-md);
+    position: relative;
 
-    h1 {
-      font-size: 2.5rem;
-      margin-bottom: 0.5rem;
-      font-weight: 600;
+    &__controls {
+      @include flex-between;
+      align-items: center;
+      margin-bottom: spacing(4);
+
+      h1 {
+        @include responsive-heading-2;
+        font-weight: $font-weight-bold;
+        margin: 0;
+      }
     }
 
     p {
-      font-size: 1.1rem;
+      @include text-large;
       opacity: 0.9;
+      margin: 0;
+      text-align: center;
     }
   }
 
   &-main {
     flex: 1;
-    padding: 2rem;
-    display: flex;
-    justify-content: center;
+    padding: spacing(8);
+    @include flex-center;
     align-items: flex-start;
+    overflow-y: auto;
   }
 }
 
 // Feature card styles
 .feature-card {
-  background: white;
-  border-radius: $border-radius;
-  box-shadow: $box-shadow;
-  padding: 2rem;
+  @include card-interactive;
   max-width: 500px;
   width: 100%;
 
   h2 {
-    color: $primary-color;
-    margin-bottom: 1rem;
-    font-size: 1.5rem;
+    @include heading-3;
+    color: var(--primary-color);
+    margin-bottom: spacing(4);
   }
 
   ul {
     list-style: none;
-    
+
     li {
-      padding: 0.5rem 0;
-      font-size: 1.1rem;
-      
+      padding: spacing(2) 0;
+      @include text-normal;
+      @include transition(all, 0.3s, ease);
+
       &:hover {
-        color: $primary-color;
-        transform: translateX(5px);
-        transition: all 0.3s ease;
+        color: var(--primary-color);
+        transform: translateX(spacing(2));
       }
     }
   }

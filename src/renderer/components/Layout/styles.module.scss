@@ -1,0 +1,25 @@
+.layout {
+  min-height: 100vh;
+  display: flex;
+  background: $bg-primary;
+  color: $text-primary;
+}
+
+.layoutContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; // Prevent flex item overflow
+  @include transition(margin-left, 0.3s, cubic-bezier(0.4, 0, 0.2, 1));
+
+  // Desktop layout with sidebar states
+  @include media-up(lg) {
+    &.layoutContentClosed {
+      margin-left: 64px; // Closed sidebar width
+    }
+
+    &.layoutContentOpen {
+      margin-left: 280px; // Open sidebar width
+    }
+  }
+}

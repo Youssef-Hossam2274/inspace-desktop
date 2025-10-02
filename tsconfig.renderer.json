@@ -4,7 +4,5 @@
     "outDir": "./dist/renderer",
     "noEmit": false
   },
-  "include": [
-    "src/renderer"
-  ]
+  "include": ["src/renderer", "src/renderer/types"]
 }
