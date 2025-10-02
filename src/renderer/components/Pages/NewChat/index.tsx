@@ -80,19 +80,23 @@ const NewChat: FC = () => {
     };
   }, []);
 
-  const handleApprovalDecision = async (decision: "approve" | "retry") => {
+  const handleApprovalDecision = async (
+    decision: "approve" | "retry" | "abort"
+  ) => {
     console.log(`User decision: ${decision}`);
 
     // Remove the approval message
     setMessages((prev) => prev.filter((msg) => msg.type !== "approval"));
 
-    // Add status message
+    // Add status message based on decision
     const statusMessage: Message = {
       id: Date.now().toString(),
       content:
         decision === "approve"
-          ? "✓ Executing actions..."
-          : "🔄 Regenerating action plan...",
+          ? "Executing actions..."
+          : decision === "retry"
+            ? "Regenerating action plan..."
+            : "Execution aborted",
       timestamp: new Date(),
       sender: "assistant",
     };
@@ -101,6 +105,12 @@ const NewChat: FC = () => {
     // Hide window ONLY when user approves (to execute actions on the actual UI)
     if (decision === "approve") {
       await window.electronAPI.hideWindow();
+    }
+
+    // If aborted, stop processing and show window
+    if (decision === "abort") {
+      setIsProcessing(false);
+      await window.electronAPI.showWindow();
     }
 
     // Send decision to main process
@@ -120,8 +130,6 @@ const NewChat: FC = () => {
     };
 
     setMessages((prev) => [...prev, newMessage]);
-
-    // DON'T hide the window yet - wait for approval first
 
     try {
       const result = await window.electronAPI.executePrompt(content);
@@ -174,6 +182,7 @@ const NewChat: FC = () => {
                     iteration={message.iteration || 0}
                     onApprove={() => handleApprovalDecision("approve")}
                     onRetry={() => handleApprovalDecision("retry")}
+                    onAbort={() => handleApprovalDecision("abort")}
                   />
                 ) : (
                   <div

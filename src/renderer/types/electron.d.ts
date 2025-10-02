@@ -19,7 +19,9 @@ export interface IElectronAPI {
   onApprovalNeeded: (
     callback: (data: { actionPlan: any; iteration: number }) => void
   ) => void;
-  sendApprovalDecision: (decision: "approve" | "retry") => Promise<void>;
+  sendApprovalDecision: (
+    decision: "approve" | "retry" | "abort"
+  ) => Promise<void>;
   removeApprovalListener: () => void;
 }
 

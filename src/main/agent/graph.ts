@@ -8,8 +8,11 @@ import { GraphState } from "./GraphState.js";
 import { approvalNode } from "./nodes/approval.js";
 import { StateGraph, MemorySaver } from "@langchain/langgraph";
 
-// SIMPLIFIED ROUTING FUNCTIONS
 function afterReasoning(state: typeof GraphState.State): string {
+  if (state.user_decision === "abort") {
+    return "end";
+  }
+
   if ((state.iteration_count || 0) >= (state.max_iterations || 10)) {
     return "end";
   }
@@ -28,26 +31,27 @@ function afterApproval(state: typeof GraphState.State): string {
   if (state.user_decision === "retry") {
     return "perception";
   }
-  return "action"; // Always go to action after approval
+  if (state.user_decision === "abort") {
+    return "end";
+  }
+  return "action";
 }
 
 function afterAction(state: typeof GraphState.State): string {
   const lastResult = state.action_results?.[state.action_results.length - 1];
+  if (state.user_decision === "abort") {
+    return "end";
+  }
 
-  // If action failed, retry perception
   if (!lastResult?.success) {
     return "perception";
   }
 
   const currentStep = state.action_plan?.current_step ?? 0;
   const totalActions = state.action_plan?.actions.length ?? 0;
-
-  // If more actions remain, continue executing
   if (currentStep < totalActions) {
     return "action";
   }
-
-  // All actions complete → verify
   return "verification";
 }
 
@@ -58,7 +62,9 @@ function afterVerification(state: typeof GraphState.State): string {
     console.log("[AfterVerification] Max iterations reached");
     return "end";
   }
-
+  if (state.user_decision === "abort") {
+    return "end";
+  }
   const batchVerification = state.action_plan?.batch_verification;
 
   // Check verification results
@@ -168,12 +174,14 @@ export async function createAgentWorkflow() {
     .addConditionalEdges("approval", afterApproval, {
       action: "action",
       perception: "perception",
+      end: "__end__",
     })
 
     .addConditionalEdges("action", afterAction, {
       action: "action",
       verification: "verification",
       perception: "perception",
+      end: "__end__",
     })
 
     .addConditionalEdges("verification", afterVerification, {
@@ -229,7 +237,7 @@ export async function executeAgentWorkflow(
   testId?: string,
   onApprovalNeeded?: (
     state: typeof GraphState.State
-  ) => Promise<"approve" | "retry">
+  ) => Promise<"approve" | "retry" | "abort">
 ) {
   console.log(`User Goal: "${userPrompt}"`);
   const graph = await createAgentWorkflow();
@@ -257,7 +265,18 @@ export async function executeAgentWorkflow(
 
         const decision = await onApprovalNeeded(result);
         console.log(`[WORKFLOW] User decision: ${decision}`);
+        if (decision === "abort") {
+          console.log("[WORKFLOW] User aborted execution");
+          await graph.updateState(config, {
+            user_decision: "abort",
+            status: "aborted",
+            pending_approval: false,
+          });
 
+          // Invoke one more time to trigger the end transition
+          result = await graph.invoke(null, config);
+          return { ...result, status: "aborted" as const };
+        }
         await graph.updateState(config, {
           user_decision: decision,
           pending_approval: false,

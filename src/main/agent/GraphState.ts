@@ -16,6 +16,6 @@ export const GraphState = Annotation.Root({
   errors: Annotation<string[]>,
   last_error: Annotation<string>,
   pending_approval: Annotation<boolean>,
-  user_decision: Annotation<"approve" | "retry" | null>,
+  user_decision: Annotation<"approve" | "retry" | "abort" | null>,
   verification_passed: Annotation<boolean | undefined>,
 });

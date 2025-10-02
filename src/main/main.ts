@@ -10,7 +10,9 @@ const __dirname = path.dirname(__filename);
 const isDev = process.env.NODE_ENV === "development";
 
 let mainWindow: BrowserWindow | null = null;
-let approvalResolve: ((decision: "approve" | "retry") => void) | null = null;
+let approvalResolve:
+  | ((decision: "approve" | "retry" | "abort") => void)
+  | null = null;
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
@@ -69,7 +71,7 @@ ipcMain.handle("execute-prompt", async (event, userPrompt: string) => {
         });
 
         // Wait for user decision
-        return new Promise<"approve" | "retry">((resolve) => {
+        return new Promise<"approve" | "retry" | "abort">((resolve) => {
           approvalResolve = resolve;
         });
       }
@@ -103,7 +105,7 @@ ipcMain.handle("execute-prompt", async (event, userPrompt: string) => {
 // Handle approval decision from renderer
 ipcMain.handle(
   "approval-decision",
-  async (event, decision: "approve" | "retry") => {
+  async (event, decision: "approve" | "retry" | "abort") => {
     console.log("[MAIN] Received approval decision:", decision);
 
     if (approvalResolve) {
@@ -121,7 +123,10 @@ ipcMain.handle(
 );
 
 ipcMain.handle("cua-actions", cuaActions);
-
+ipcMain.handle("abort-execution", async () => {
+  console.log("[IPC] Abort execution requested");
+  return { success: true };
+});
 ipcMain.handle("hide-window", () => {
   if (mainWindow) {
     mainWindow.hide();
