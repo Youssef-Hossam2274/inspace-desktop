@@ -22,18 +22,15 @@ export async function reasoningNode(
       `[Reasoning] Perception detected ${state.perception_result.elements.length} elements`
     );
 
-    // Filter elements for LLM context
-    // const filteredElements = ElementFilter.filterAndPrioritize(
-    //   state.perception_result.elements,
-    //   state.user_prompt,
-    //   state.action_results || []
-    // );
-    const filteredElements = state.perception_result.elements;
+    const filteredElements = ElementFilter.filterAndPrioritize(
+      state.perception_result.elements,
+      state.user_prompt,
+      state.action_results || []
+    );
     console.log(
       `[Reasoning] Filtered to ${filteredElements.length} elements for LLM`
     );
 
-    // Build context with iteration awareness
     const context = {
       user_prompt: state.user_prompt,
       current_elements: filteredElements,

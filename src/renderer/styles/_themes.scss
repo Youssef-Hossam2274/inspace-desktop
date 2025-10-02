@@ -1,0 +1,113 @@
+// Default (Dark Theme)
+:root {
+  // Background colors
+  --bg-primary: #181818;
+  --bg-secondary: #141414;
+  --bg-tertiary: #1a1a1a;
+  --bg-quaternary: #222;
+
+  // Text colors
+  --text-primary: #e0e0e0;
+  --text-secondary: #a0a0a0;
+  --text-tertiary: #6b7280;
+
+  // Border colors
+  --border-primary: #2a2a2a;
+  --border-secondary: #3a3a3a;
+  --border-tertiary: #252525;
+
+  // Primary colors
+  --primary-color: #6b7db5;
+  --primary-color-alpha: rgba(107, 125, 181, 0.1);
+  --primary-hover: #7a8dc5;
+
+  // Status colors
+  --success-color: #10b981;
+  --error-color: #ef4444;
+  --warning-color: #f59e0b;
+  --info-color: #3b82f6;
+
+  // Interactive states
+  --hover-overlay: rgba(255, 255, 255, 0.05);
+  --active-overlay: rgba(255, 255, 255, 0.1);
+  --focus-ring: #6b7db5;
+
+  // Shadows
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.6);
+}
+
+// Light Theme
+[data-theme="light"] {
+  // Background colors
+  --bg-primary: #ffffff;
+  --bg-secondary: #f9fafb;
+  --bg-tertiary: #f3f4f6;
+  --bg-quaternary: #e5e7eb;
+
+  // Text colors
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-tertiary: #9ca3af;
+
+  // Border colors
+  --border-primary: #e5e7eb;
+  --border-secondary: #d1d5db;
+  --border-tertiary: #f3f4f6;
+
+  // Primary colors
+  --primary-color: #4f5f9f;
+  --primary-color-alpha: rgba(79, 95, 159, 0.1);
+  --primary-hover: #3d4d8f;
+
+  // Status colors
+  --success-color: #059669;
+  --error-color: #dc2626;
+  --warning-color: #d97706;
+  --info-color: #2563eb;
+
+  // Interactive states
+  --hover-overlay: rgba(0, 0, 0, 0.04);
+  --active-overlay: rgba(0, 0, 0, 0.08);
+  --focus-ring: #4f5f9f;
+
+  // Shadows
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+}
+
+// Export for SCSS usage
+$bg-primary: var(--bg-primary);
+$bg-secondary: var(--bg-secondary);
+$bg-tertiary: var(--bg-tertiary);
+$bg-quaternary: var(--bg-quaternary);
+
+$text-primary: var(--text-primary);
+$text-secondary: var(--text-secondary);
+$text-tertiary: var(--text-tertiary);
+
+$border-primary: var(--border-primary);
+$border-secondary: var(--border-secondary);
+$border-tertiary: var(--border-tertiary);
+
+$primary-color: var(--primary-color);
+$primary-color-alpha: var(--primary-color-alpha);
+$primary-hover: var(--primary-hover);
+
+$success-color: var(--success-color);
+$error-color: var(--error-color);
+$warning-color: var(--warning-color);
+$info-color: var(--info-color);
+
+$hover-overlay: var(--hover-overlay);
+$active-overlay: var(--active-overlay);
+$focus-ring: var(--focus-ring);
+
+$shadow-sm: var(--shadow-sm);
+$shadow-md: var(--shadow-md);
+$shadow-lg: var(--shadow-lg);
+$shadow-xl: var(--shadow-xl);
