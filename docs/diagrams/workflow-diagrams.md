@@ -8,6 +8,67 @@ This document provides a breakdown of the **Perception Phase** and **Reasoning P
 - [Perception Phase](#perception-phase)
 - [Reasoning Phase](#reasoning-phase)
 
+--- 
+  ## Bird view for project
+
+```mermaid
+  sequenceDiagram
+    actor User
+    participant TestEngineer
+    participant BackEnd
+    participant Database
+    participant Workflow as Workflow Engine
+    participant Perception as Perception Layer
+    participant Reasoning as Reasoning Layer
+    participant Agent as Execution Agent
+    participant SUT as System Under Test
+
+    %% Test Setup
+    Note over TestEngineer,Database: Test Initialization
+    TestEngineer->>BackEnd: trigger test run
+    BackEnd->>Database: fetch test scenario
+    Database-->>BackEnd: return scenario & steps
+    
+    %% Workflow Execution
+    Note over User,SUT: Test Execution Loop
+    User->>Workflow: start(test prompt)
+    
+    loop For each test step
+        %% Perception Phase
+        rect rgb(240, 248, 255)
+        Note over Workflow,Perception: 1. Perceive UI State
+        Workflow->>Perception: capture & analyze screen
+        Perception->>Perception: capture screenshot
+        Perception->>Perception: parse UI elements
+        Perception-->>Workflow: UI elements & locations
+        end
+        
+        %% Reasoning Phase
+        rect rgb(255, 250, 240)
+        Note over Workflow,Reasoning: 2. Plan Actions
+        Workflow->>Reasoning: determine next action
+        Reasoning->>Reasoning: filter relevant elements
+        Reasoning->>Reasoning: generate action plan
+        Reasoning-->>Workflow: planned action
+        end
+        
+        %% Execution Phase
+        rect rgb(255, 245, 180)
+        Note over Workflow,SUT: 3. Execute Action
+        Workflow->>Agent: execute command
+        Agent->>SUT: perform action (click/type/navigate)
+        SUT-->>Agent: action result
+        Agent-->>Workflow: execution status
+        end
+    end
+    
+    %% Results & Reporting
+    Note over BackEnd,Database: Results Collection
+    Workflow-->>BackEnd: test results
+    BackEnd->>Database: store results
+    BackEnd-->>TestEngineer: report with results
+```
+
 ---
 
 ## 🔹 Perception Phase
