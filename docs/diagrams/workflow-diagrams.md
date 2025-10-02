@@ -55,7 +55,6 @@ This document provides a breakdown of the **Perception Phase** and **Reasoning P
         %% Execution Phase
         rect rgb(255, 245, 180)
         Note over PythonServer,SUT: 3. Execute Action
-        PythonServer->>Agent: execute command
         Agent->>SUT: perform action (click/type/navigate)
         SUT-->>Agent: action result
         Agent-->>backEnd: execution status
