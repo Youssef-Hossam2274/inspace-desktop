@@ -1,6 +1,6 @@
 # InSpace Desktop
 
-## 📑 Idex 
+## 📑 Idex
 
 [System Diagrams](docs/diagrams/workflow-diagrams.md)
 

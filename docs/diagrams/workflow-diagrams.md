@@ -1,10 +1,11 @@
 # System Diagrams
 
-This document provides a breakdown of the **Perception Phase** and **Reasoning Phase** of the workflow using sequence diagrams.  
+This document provides a breakdown of the **Perception Phase** and **Reasoning Phase** of the workflow using sequence diagrams.
 
 ---
 
 ## 📑 Table of Contents
+
 - [Perception Phase](#perception-phase)
 - [Reasoning Phase](#reasoning-phase)
 
@@ -19,7 +20,7 @@ This document provides a breakdown of the **Perception Phase** and **Reasoning P
     participant PythonServer as PythonServer
     participant Perception as Perception Layer
     participant Reasoning as Reasoning Layer
-    participant Agent as Node server 
+    participant Agent as Node server
     participant SUT as System Under Test
 
     %% Test Setup
@@ -27,11 +28,11 @@ This document provides a breakdown of the **Perception Phase** and **Reasoning P
     TestEngineer->>FrontEnd: trigger test run
     FrontEnd->>backEnd: fetch test scenario
     backEnd-->>FrontEnd: return scenario & steps
-    
+
     %% Workflow Execution
     Note over User,SUT: Test Execution Loop
     User->>PythonServer: start(test prompt)
-    
+
     loop For each test step
         %% Perception Phase
         rect rgb(240, 248, 255)
@@ -41,16 +42,16 @@ This document provides a breakdown of the **Perception Phase** and **Reasoning P
         Perception->>Perception: parse UI elements
         Perception-->>PythonServer: UI elements & locations
         end
-        
+
         %% Reasoning Phase
         rect rgb(255, 250, 240)
         Note over PythonServer,Reasoning: 2. Plan Actions
-        PythonServer->>Reasoning: send elements locations 
+        PythonServer->>Reasoning: send elements locations
         Reasoning->>Reasoning: filter relevant elements
         Reasoning->>Reasoning: generate action plan
         Reasoning-->>Agent: planned action
         end
-        
+
         %% Execution Phase
         rect rgb(255, 245, 180)
         Note over PythonServer,SUT: 3. Execute Action
@@ -59,7 +60,7 @@ This document provides a breakdown of the **Perception Phase** and **Reasoning P
         Agent-->>backEnd: execution status
         end
     end
-    
+
     %% Results & Reporting
     Note over FrontEnd,backEnd: Results Collection
     backEnd-->>FrontEnd: test results
@@ -90,14 +91,14 @@ sequenceDiagram
     rect rgb(240, 248, 255)
     Note over Graph,OmniAPI: Perception Phase
     Graph->>Perception: execute(state)
-    
+
     alt First iteration
         Perception->>Screenshot: captureScreenshot()
     else Subsequent iterations
         Perception->>Screenshot: captureMultipleRegions(targetRegions)
         Note right of Perception: Focus on 3x3 grid<br/>around last action
     end
-    
+
     Screenshot-->>Perception: screenshot (base64)
     Perception->>OmniAPI: POST /parse (screenshot)
     OmniAPI-->>Perception: UI elements with bboxes
@@ -106,11 +107,9 @@ sequenceDiagram
 
 ```
 
-
 ## 🔹 Reasoning Phase
 
 The **Reasoning Phase** interprets the perception results, filters possible UI actions, builds a prompt for the LLM, and retrieves the action plan from the Groq API.
-
 
 ```mermaid
     %% Reasoning Phase
@@ -125,12 +124,12 @@ The **Reasoning Phase** interprets the perception results, filters possible UI a
     Note over Graph,GroqAPI: Reasoning Phase
     Graph->>Reasoning: execute(state)
     Reasoning->>LLM: generateActionPlan(elements, prompt)
-    
+
     LLM->>LLM: filterElements(top 50)
     LLM->>LLM: buildPrompt(filteredElements)
     LLM->>GroqAPI: POST /chat/completions
     GroqAPI-->>LLM: ActionPlan JSON
-    
+
     LLM-->>Reasoning: ActionPlan{actions[], next_action}
     Reasoning-->>Graph: action_plan
     end
