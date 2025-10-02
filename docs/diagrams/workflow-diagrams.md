@@ -8,6 +8,65 @@ This document provides a breakdown of the **Perception Phase** and **Reasoning P
 - [Perception Phase](#perception-phase)
 - [Reasoning Phase](#reasoning-phase)
 
+  ## Bird view for project
+
+```mermaid
+  sequenceDiagram
+    actor User
+    participant TestEngineer
+    participant FrontEnd
+    participant backEnd
+    participant PythonServer as PythonServer
+    participant Perception as Perception Layer
+    participant Reasoning as Reasoning Layer
+    participant Agent as Node server 
+    participant SUT as System Under Test
+
+    %% Test Setup
+    Note over TestEngineer,backEnd: Test Initialization
+    TestEngineer->>FrontEnd: trigger test run
+    FrontEnd->>backEnd: fetch test scenario
+    backEnd-->>FrontEnd: return scenario & steps
+    
+    %% Workflow Execution
+    Note over User,SUT: Test Execution Loop
+    User->>PythonServer: start(test prompt)
+    
+    loop For each test step
+        %% Perception Phase
+        rect rgb(240, 248, 255)
+        Note over PythonServer,Perception: 1. Perceive UI State
+        PythonServer->>Perception: capture & analyze screen
+        Perception->>Perception: capture screenshot
+        Perception->>Perception: parse UI elements
+        Perception-->>PythonServer: UI elements & locations
+        end
+        
+        %% Reasoning Phase
+        rect rgb(255, 250, 240)
+        Note over PythonServer,Reasoning: 2. Plan Actions
+        PythonServer->>Reasoning: send elements locations 
+        Reasoning->>Reasoning: filter relevant elements
+        Reasoning->>Reasoning: generate action plan
+        Reasoning-->>Agent: planned action
+        end
+        
+        %% Execution Phase
+        rect rgb(255, 245, 180)
+        Note over PythonServer,SUT: 3. Execute Action
+        Agent->>SUT: perform action (click/type/navigate)
+        SUT-->>Agent: action result
+        Agent-->>backEnd: execution status
+        end
+    end
+    
+    %% Results & Reporting
+    Note over FrontEnd,backEnd: Results Collection
+    backEnd-->>FrontEnd: test results
+    FrontEnd->>backEnd: store results
+    FrontEnd-->>TestEngineer: report with results
+```
+
 ---
 
 ## 🔹 Perception Phase
@@ -68,8 +127,6 @@ The **Reasoning Phase** interprets the perception results, filters possible UI a
     Reasoning->>LLM: generateActionPlan(elements, prompt)
     
     LLM->>LLM: filterElements(top 50)
-    Note right of LLM: Score by:<br/>Interactive +100<br/>Keyword match +50
-    
     LLM->>LLM: buildPrompt(filteredElements)
     LLM->>GroqAPI: POST /chat/completions
     GroqAPI-->>LLM: ActionPlan JSON
