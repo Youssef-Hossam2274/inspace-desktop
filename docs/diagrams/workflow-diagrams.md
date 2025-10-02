@@ -49,7 +49,7 @@ This document provides a breakdown of the **Perception Phase** and **Reasoning P
         PythonServer->>Reasoning: determine next action
         Reasoning->>Reasoning: filter relevant elements
         Reasoning->>Reasoning: generate action plan
-        Reasoning-->>PythonServer: planned action
+        Reasoning-->>Agent: planned action
         end
         
         %% Execution Phase
@@ -64,7 +64,7 @@ This document provides a breakdown of the **Perception Phase** and **Reasoning P
     
     %% Results & Reporting
     Note over FrontEnd,backEnd: Results Collection
-    PythonServer-->>FrontEnd: test results
+    backEnd-->>FrontEnd: test results
     FrontEnd->>backEnd: store results
     FrontEnd-->>TestEngineer: report with results
 ```
