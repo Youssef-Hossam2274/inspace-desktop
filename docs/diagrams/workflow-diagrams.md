@@ -8,7 +8,6 @@ This document provides a breakdown of the **Perception Phase** and **Reasoning P
 - [Perception Phase](#perception-phase)
 - [Reasoning Phase](#reasoning-phase)
 
---- 
   ## Bird view for project
 
 ```mermaid
@@ -128,7 +127,6 @@ The **Reasoning Phase** interprets the perception results, filters possible UI a
     Reasoning->>LLM: generateActionPlan(elements, prompt)
     
     LLM->>LLM: filterElements(top 50)
-    
     LLM->>LLM: buildPrompt(filteredElements)
     LLM->>GroqAPI: POST /chat/completions
     GroqAPI-->>LLM: ActionPlan JSON

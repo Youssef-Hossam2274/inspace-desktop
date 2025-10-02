@@ -76,6 +76,7 @@ export async function callPerceptionApi(
     // Transform API response to our internal format
     const elements: UIElement[] =
       apiResponse.parsed_content_list?.map((element: any) => ({
+        elementId: "",
         bbox: element.bbox || [0, 0, 0, 0],
         content: element.content || "",
         type: element.type || element.element_type || "unknown",
