@@ -46,7 +46,7 @@ This document provides a breakdown of the **Perception Phase** and **Reasoning P
         %% Reasoning Phase
         rect rgb(255, 250, 240)
         Note over PythonServer,Reasoning: 2. Plan Actions
-        PythonServer->>Reasoning: determine next action
+        PythonServer->>Reasoning: send elements locations 
         Reasoning->>Reasoning: filter relevant elements
         Reasoning->>Reasoning: generate action plan
         Reasoning-->>Agent: planned action
