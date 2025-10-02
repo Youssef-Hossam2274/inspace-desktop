@@ -1,31 +1,6 @@
 import { IpcMainInvokeEvent } from "electron";
 import { NutJSResult } from "../../renderer/types/electron";
-import {
-  leftClickAction,
-  leftDoubleClickAction,
-  rightClickAction,
-} from "./actions/click.js";
-import { moveMouse } from "./actions/moveMouse.js";
-import { typingAction } from "./actions/typing.js";
-
-type ActionType =
-  | "click"
-  | "double_click"
-  | "right_click"
-  | "move_mouse"
-  | "type";
-//   | "key_press"
-//   | "key_combo"
-//   | "clear_input"
-//   | "scroll"
-//   | "hover"
-//   | "paste"
-//   | "copy"
-//   | "assert_text"
-//   | "screenshot"
-//   | "wait"
-//   | "drag_and_drop"
-//   | "custom_action"
+import { ActionType } from "../agent/types";
 
 export interface CUAActionParams {
   bbox: number[];
@@ -40,16 +15,21 @@ export const cuaActions = async (
   event: IpcMainInvokeEvent,
   options: CUAActionOptions
 ): Promise<NutJSResult> => {
-  const actionEnum: Record<
-    ActionType,
-    (event: IpcMainInvokeEvent, params: any) => Promise<NutJSResult>
-  > = {
-    click: leftClickAction,
-    right_click: rightClickAction,
-    double_click: leftDoubleClickAction,
-    move_mouse: moveMouse,
-    type: typingAction,
-  };
-
-  return actionEnum[options.action](event, options.params);
+  const { action, params } = options;
+  console.log(`[cuaActions] Executing action: ${action}`);
+  console.log(`[cuaActions] Params:`, params);
+  try {
+    switch (action) {
+      default:
+        return {
+          success: false,
+          error: `Unknown action type: ${action}`,
+        };
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
 };

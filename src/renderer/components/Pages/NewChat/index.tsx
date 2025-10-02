@@ -1,5 +1,7 @@
 import { FC, useState, useRef, useEffect, useCallback } from "react";
 import ChatInput from "../../ChatInput";
+import ActionPlanApproval from "../../ActionPlanApproval";
+import { useHistory } from "../../../contexts/HistoryContext";
 import styles from "./styles.module.scss";
 
 interface Message {
@@ -7,15 +9,21 @@ interface Message {
   content: string;
   timestamp: Date;
   sender: "user" | "assistant";
+  type?: "text" | "approval";
+  actionPlan?: any;
+  iteration?: number;
 }
 
 const NewChat: FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [showScrollButton, setShowScrollButton] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [currentPrompt, setCurrentPrompt] = useState<string>("");
+  const [currentIteration, setCurrentIteration] = useState<number>(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const { addHistoryItem } = useHistory();
 
-  // Scroll to bottom function
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({
@@ -25,7 +33,6 @@ const NewChat: FC = () => {
     }
   };
 
-  // Check if user is at the bottom of the chat
   const isAtBottom = () => {
     if (!messagesContainerRef.current) return true;
     const { scrollTop, scrollHeight, clientHeight } =
@@ -33,21 +40,18 @@ const NewChat: FC = () => {
     return scrollHeight - scrollTop - clientHeight < 50;
   };
 
-  // Handle scroll events
   const handleScroll = useCallback(() => {
     if (messagesContainerRef.current) {
       setShowScrollButton(!isAtBottom());
     }
   }, []);
 
-  // Auto-scroll when messages change (only if user is at bottom)
   useEffect(() => {
     if (!isAtBottom()) {
       scrollToBottom();
     }
   }, [messages]);
 
-  // Add scroll event listener
   useEffect(() => {
     const container = messagesContainerRef.current;
     if (container) {
@@ -56,11 +60,82 @@ const NewChat: FC = () => {
     }
   }, [handleScroll]);
 
-  const handleExcuteActions = async () => {
-    // Execute nut.js functionality - move mouse and take screenshot
+  // Listen for approval requests
+  useEffect(() => {
+    window.electronAPI.onApprovalNeeded((data: any) => {
+      console.log("Approval needed:", data);
+
+      setCurrentIteration(data.iteration || 0);
+
+      const approvalMessage: Message = {
+        id: Date.now().toString(),
+        content: "",
+        timestamp: new Date(),
+        sender: "assistant",
+        type: "approval",
+        actionPlan: data.actionPlan,
+        iteration: data.iteration,
+      };
+
+      setMessages((prev) => [...prev, approvalMessage]);
+      window.setTimeout(() => scrollToBottom(), 100);
+    });
+
+    return () => {
+      window.electronAPI.removeApprovalListener();
+    };
+  }, []);
+
+  const handleApprovalDecision = async (
+    decision: "approve" | "retry" | "abort"
+  ) => {
+    console.log(`User decision: ${decision}`);
+
+    // Remove the approval message
+    setMessages((prev) => prev.filter((msg) => msg.type !== "approval"));
+
+    // Add status message based on decision
+    const statusMessage: Message = {
+      id: Date.now().toString(),
+      content:
+        decision === "approve"
+          ? "Executing actions..."
+          : decision === "retry"
+            ? "Regenerating action plan..."
+            : "Execution aborted",
+      timestamp: new Date(),
+      sender: "assistant",
+    };
+    setMessages((prev) => [...prev, statusMessage]);
+
+    // Hide window ONLY when user approves (to execute actions on the actual UI)
+    if (decision === "approve") {
+      await window.electronAPI.hideWindow();
+    }
+
+    // If aborted, add to history and stop processing
+    if (decision === "abort") {
+      addHistoryItem({
+        prompt: currentPrompt,
+        status: "aborted",
+        result: "Execution was aborted by user",
+        iteration: currentIteration,
+      });
+      setIsProcessing(false);
+      await window.electronAPI.showWindow();
+    }
+
+    // Send decision to main process
+    await window.electronAPI.sendApprovalDecision(decision);
   };
 
-  const handleSendMessage = (content: string) => {
+  const handleSendMessage = async (content: string) => {
+    if (isProcessing) return;
+
+    setIsProcessing(true);
+    setCurrentPrompt(content);
+    setCurrentIteration(0);
+
     const newMessage: Message = {
       id: Date.now().toString(),
       content,
@@ -70,25 +145,54 @@ const NewChat: FC = () => {
 
     setMessages((prev) => [...prev, newMessage]);
 
-    // Always scroll to bottom when user sends a message
-    // window.setTimeout(() => scrollToBottom(), 100);
+    try {
+      const result = await window.electronAPI.executePrompt(content);
+      console.log("Execution result:", result);
 
-    // Here you would typically send the message to your AI service
-    // For now, we'll just add a mock response
-    window.setTimeout(async () => {
-      const responseMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: "I received your message: " + content,
+      // Add to history
+      addHistoryItem({
+        prompt: content,
+        status: result.success ? "success" : "failed",
+        result: result.success ? "Task completed successfully" : undefined,
+        error: result.success ? undefined : result.error,
+        iteration: currentIteration,
+      });
+
+      // Show completion message
+      const completionMessage: Message = {
+        id: Date.now().toString(),
+        content: result.success
+          ? "Task completed successfully!"
+          : `Error: ${result.error}`,
         timestamp: new Date(),
         sender: "assistant",
       };
-      setMessages((prev) => [...prev, responseMessage]);
-      const result = await window.electronAPI.executePrompt(content);
-      console.log(result);
-      // Scroll to bottom when response arrives
-      // window.setTimeout(() => scrollToBottom(), 100);
-      handleExcuteActions();
-    }, 1000);
+
+      setMessages((prev) => [...prev, completionMessage]);
+    } catch (error) {
+      console.error("Error executing prompt:", error);
+
+      // Add error to history
+      addHistoryItem({
+        prompt: content,
+        status: "failed",
+        error: String(error),
+        iteration: currentIteration,
+      });
+
+      const errorMessage: Message = {
+        id: Date.now().toString(),
+        content: `Error: ${error}`,
+        timestamp: new Date(),
+        sender: "assistant",
+      };
+
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsProcessing(false);
+      await window.electronAPI.showWindow();
+      window.setTimeout(() => scrollToBottom(), 100);
+    }
   };
 
   return (
@@ -102,29 +206,40 @@ const NewChat: FC = () => {
         ) : (
           <div className={styles.messagesList}>
             {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`${styles.message} ${
-                  message.sender === "user"
-                    ? styles.userMessage
-                    : styles.assistantMessage
-                }`}
-              >
-                <div className={styles.messageContent}>{message.content}</div>
-                <div className={styles.messageTime}>
-                  {message.timestamp.toLocaleTimeString()}
-                </div>
+              <div key={message.id}>
+                {message.type === "approval" ? (
+                  <ActionPlanApproval
+                    actionPlan={message.actionPlan}
+                    iteration={message.iteration || 0}
+                    onApprove={() => handleApprovalDecision("approve")}
+                    onRetry={() => handleApprovalDecision("retry")}
+                    onAbort={() => handleApprovalDecision("abort")}
+                  />
+                ) : (
+                  <div
+                    className={`${styles.message} ${
+                      message.sender === "user"
+                        ? styles.userMessage
+                        : styles.assistantMessage
+                    }`}
+                  >
+                    <div className={styles.messageContent}>
+                      {message.content}
+                    </div>
+                    <div className={styles.messageTime}>
+                      {message.timestamp.toLocaleTimeString()}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
 
-            {/* Invisible element to scroll to */}
             <div ref={messagesEndRef} />
           </div>
         )}
       </div>
 
       <div className={styles.inputContainer}>
-        {/* Scroll to bottom button */}
         {showScrollButton && (
           <button
             className={styles.scrollToBottomButton}
@@ -149,6 +264,7 @@ const NewChat: FC = () => {
         <ChatInput
           onSendMessage={handleSendMessage}
           placeholder="Ask me anything..."
+          disabled={isProcessing}
         />
       </div>
     </div>

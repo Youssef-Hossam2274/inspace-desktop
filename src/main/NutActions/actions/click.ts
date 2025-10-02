@@ -1,7 +1,8 @@
-import { mouse, Button } from "@nut-tree-fork/nut-js";
+import { mouse, Button, screen, Point } from "@nut-tree-fork/nut-js";
 import { IpcMainInvokeEvent } from "electron";
 import { NutJSResult } from "../../../renderer/types/electron";
 import { CUAActionParams } from "..";
+import { convertFromBBoxToPxPosition } from "../utils/convertFromBBoxToPxPostion.js";
 
 export interface ClickActionParams extends CUAActionParams {
   button: Button;
@@ -11,11 +12,18 @@ const clickAction = async (
   event: IpcMainInvokeEvent,
   args: ClickActionParams
 ): Promise<NutJSResult> => {
-  const { button } = args;
+  const { button, bbox } = args;
 
   try {
-    await mouse.click(button);
+    if (bbox) {
+      const m_width = await screen.width();
+      const m_height = await screen.height();
+      const pos = convertFromBBoxToPxPosition(bbox, m_width, m_height);
+      const point = new Point(pos.x, pos.y);
+      await mouse.setPosition(point);
+    }
 
+    await mouse.click(button);
     return { success: true };
   } catch (error) {
     return { success: false, error: (error as Error).message };
@@ -33,15 +41,22 @@ export const rightClickAction = async (
 ): Promise<NutJSResult> =>
   clickAction(event, { button: Button.RIGHT, ...args });
 
-export const doubleClickAction = async (
+const doubleClickAction = async (
   event: IpcMainInvokeEvent,
   args: ClickActionParams
 ): Promise<NutJSResult> => {
-  const { button } = args;
+  const { button, bbox } = args;
 
   try {
-    await mouse.doubleClick(button);
+    if (bbox) {
+      const m_width = await screen.width();
+      const m_height = await screen.height();
+      const pos = convertFromBBoxToPxPosition(bbox, m_width, m_height);
+      const point = new Point(pos.x, pos.y);
+      await mouse.setPosition(point);
+    }
 
+    await mouse.doubleClick(button);
     return { success: true };
   } catch (error) {
     return { success: false, error: (error as Error).message };

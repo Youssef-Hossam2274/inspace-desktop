@@ -1,3 +1,7 @@
+@use "@/styles/_colors" as *;
+@use "@/styles/_utils" as *;
+@use "@/styles/_typography" as *;
+@import "../../../styles/themes";
 .newChatContainer {
   height: 100vh;
   @include flex-column;

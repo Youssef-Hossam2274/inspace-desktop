@@ -36,6 +36,7 @@
     "@langchain/langgraph": "^0.4.9",
     "@nut-tree-fork/nut-js": "^4.2.6",
     "groq-sdk": "^0.33.0",
+    "lucide-react": "^0.544.0",
     "pngjs": "^7.0.0",
     "prettier": "^3.6.2",
     "react": "^18.3.1",

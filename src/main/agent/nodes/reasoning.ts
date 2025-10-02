@@ -5,28 +5,30 @@ import { ElementFilter } from "../../services/llm/ElementFilter.js";
 export async function reasoningNode(
   state: AgentState
 ): Promise<Partial<AgentState>> {
-  console.log(`Starting reasoning node - Iteration ${state.iteration_count}`);
+  console.log(`\n[REASONING] Starting - Iteration ${state.iteration_count}`);
+
   try {
     if (!state.perception_result) {
       const error = "No perception result available for reasoning";
-      console.error(`${error}`);
+      console.error(`[Reasoning] ${error}`);
       return {
         status: "failed",
         last_error: error,
         errors: [...state.errors, error],
       };
     }
+
     console.log(
-      `Perception result has ${state.perception_result.elements.length} elements`
+      `[Reasoning] Perception detected ${state.perception_result.elements.length} elements`
     );
+
     const filteredElements = ElementFilter.filterAndPrioritize(
       state.perception_result.elements,
       state.user_prompt,
       state.action_results || []
     );
-    // const filteredElements = state.perception_result.elements;
     console.log(
-      `Filtered to ${filteredElements.length} elements for LLM context`
+      `[Reasoning] Filtered to ${filteredElements.length} elements for LLM`
     );
 
     const context = {
@@ -36,18 +38,17 @@ export async function reasoningNode(
       previous_actions: state.action_results || [],
       test_id: state.test_id,
     };
-    console.log("Sending context to LLM for action plan generation...");
+
+    console.log("[Reasoning] Calling LLM for action plan...");
     console.log(
-      `Element IDs: ${filteredElements
-        .map((e) => e.elementId)
-        .slice(0, 5)
-        .join(", ")}...`
+      `[Reasoning] Context: ${filteredElements.length} elements, ${context.previous_actions.length} previous actions`
     );
 
     const actionPlan = await callLLMApi(context);
+
     if (!actionPlan) {
       const error = "LLM failed to generate action plan";
-      console.error(`${error}`);
+      console.error(`[Reasoning] ${error}`);
       return {
         status: "failed",
         last_error: error,
@@ -55,40 +56,76 @@ export async function reasoningNode(
       };
     }
 
-    if (!actionPlan.actions || actionPlan.actions.length === 0) {
-      const error = "Generated action plan contains no actions";
-      console.error(`${error}`);
+    if (
+      !actionPlan.actions ||
+      actionPlan.actions.length === 0 ||
+      actionPlan.next_action === "complete"
+    ) {
+      console.log("[Reasoning] LLM indicates task is COMPLETE");
       return {
-        status: "failed",
-        last_error: error,
-        errors: [...state.errors, error],
+        status: "completed",
+        action_plan: {
+          ...actionPlan,
+          status: "completed",
+          next_action: "complete",
+          actions: [],
+          current_step: 0,
+        },
       };
     }
+
+    // Resolve element IDs to bboxes
     const actionPlanWithBboxes = resolveElementIds(
       actionPlan,
       state.element_map
     );
+
+    actionPlanWithBboxes.current_step = 0;
+    actionPlanWithBboxes.status = "in_progress";
+
     console.log(
-      `Generated action plan with ${actionPlanWithBboxes.actions.length} actions`
+      `[Reasoning] Generated plan with ${actionPlanWithBboxes.actions.length} actions for this iteration`
     );
-    console.log(`Next action directive: ${actionPlanWithBboxes.next_action}`);
+    console.log(
+      `[Reasoning] Next action type: ${actionPlanWithBboxes.next_action}`
+    );
+
+    // Log all actions
     actionPlanWithBboxes.actions.forEach(
       (action: {
         step_id: any;
         action_type: any;
         description: any;
-        target: { elementId: any; bbox: any[] };
+        target?: { elementId: any; bbox?: any[] };
+        parameters?: any;
       }) => {
         console.log(
-          `Action ${action.step_id}: ${action.action_type} - ${action.description}`
+          `  [${action.step_id}] ${action.action_type}: ${action.description}`
         );
         if (action.target?.elementId) {
           console.log(
-            `  → Element: ${action.target.elementId} → bbox: ${action.target.bbox?.map((n) => n.toFixed(3)).join(",")}`
+            `      Element: ${action.target.elementId}${action.target.bbox ? ` at [${action.target.bbox.map((n) => n.toFixed(3)).join(", ")}]` : ""}`
           );
+        }
+        if (action.parameters) {
+          console.log(`      Parameters: ${JSON.stringify(action.parameters)}`);
         }
       }
     );
+
+    // Log verification criteria
+    if (actionPlanWithBboxes.batch_verification?.success_criteria) {
+      console.log(
+        `[Reasoning] Verification criteria (${actionPlanWithBboxes.batch_verification.success_criteria.length} checks):`
+      );
+      actionPlanWithBboxes.batch_verification.success_criteria.forEach(
+        (c: any, i: number) => {
+          console.log(`    ${i + 1}. ${c.type}: "${c.content}"`);
+        }
+      );
+    } else {
+      console.log("[Reasoning] No verification criteria defined");
+    }
 
     return {
       action_plan: actionPlanWithBboxes,
@@ -96,7 +133,7 @@ export async function reasoningNode(
     };
   } catch (error) {
     const errorMsg = `Reasoning node error: ${error instanceof Error ? error.message : String(error)}`;
-    console.error(`${errorMsg}`);
+    console.error(`[Reasoning] ${errorMsg}`);
 
     return {
       status: "failed",
@@ -111,25 +148,31 @@ function resolveElementIds(
   elementMap?: Map<string, [number, number, number, number]>
 ): any {
   if (!elementMap) {
-    console.warn("No element_map available, cannot resolve elementIds");
+    console.warn(
+      "[Reasoning] No element_map available, cannot resolve elementIds"
+    );
     return actionPlan;
   }
 
   const resolvedActions = actionPlan.actions.map((action: any) => {
     const resolvedAction = { ...action };
 
+    // Resolve main target
     if (action.target?.elementId) {
       const bbox = elementMap.get(action.target.elementId);
       if (bbox) {
         resolvedAction.target.bbox = bbox;
         console.log(
-          `Resolved ${action.target.elementId} → [${bbox.map((n) => n.toFixed(3)).join(", ")}]`
+          `[Reasoning] Resolved ${action.target.elementId} → [${bbox.map((n) => n.toFixed(3)).join(", ")}]`
         );
       } else {
-        console.warn(`Could not resolve elementId: ${action.target.elementId}`);
+        console.warn(
+          `[Reasoning] Could not resolve elementId: ${action.target.elementId}`
+        );
       }
     }
 
+    // Resolve drag_and_drop parameters
     if (action.action_type === "drag_and_drop" && action.parameters) {
       if (action.parameters.from_elementId) {
         const fromBbox = elementMap.get(action.parameters.from_elementId);

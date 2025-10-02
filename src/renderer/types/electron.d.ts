@@ -8,8 +8,21 @@ export interface NutJSResult {
 
 export interface IElectronAPI {
   platform: string;
-  executePrompt: (userPrompt: string) => any;
+  executePrompt: (userPrompt: string) => Promise<{
+    success: boolean;
+    result?: any;
+    error?: string;
+  }>;
   cuaActions: (params: CUAActionOptions) => Promise<NutJSResult>;
+  hideWindow: () => Promise<void>;
+  showWindow: () => Promise<void>;
+  onApprovalNeeded: (
+    callback: (data: { actionPlan: any; iteration: number }) => void
+  ) => void;
+  sendApprovalDecision: (
+    decision: "approve" | "retry" | "abort"
+  ) => Promise<void>;
+  removeApprovalListener: () => void;
 }
 
 declare global {

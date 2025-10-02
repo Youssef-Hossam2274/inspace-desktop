@@ -1,0 +1,25 @@
+%%{init: {'flowchart': {'curve': 'linear'}}}%%
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	perception(perception)
+	reasoning(reasoning)
+	approval(approval<hr/><small><em>__interrupt = before</em></small>)
+	action(action)
+	verification(verification)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> perception;
+	perception --> reasoning;
+	reasoning -.-> approval;
+	reasoning -. &nbsp;end&nbsp; .-> __end__;
+	approval -.-> action;
+	approval -.-> perception;
+	approval -. &nbsp;end&nbsp; .-> __end__;
+	action -.-> verification;
+	action -.-> perception;
+	action -. &nbsp;end&nbsp; .-> __end__;
+	verification -.-> perception;
+	verification -. &nbsp;end&nbsp; .-> __end__;
+	action -.-> action;
+	classDef default fill:#f2f0ff,line-height:1.2;
+	classDef first fill-opacity:0;
+	classDef last fill:#bfb6fc;

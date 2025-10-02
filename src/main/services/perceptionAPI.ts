@@ -60,20 +60,6 @@ export async function callPerceptionApi(
     );
     console.log(`Server processing latency: ${apiResponse.latency}s`);
 
-    if (
-      apiResponse.parsed_content_list &&
-      apiResponse.parsed_content_list.length > 0
-    ) {
-      console.log(
-        `Sample element structure:`,
-        JSON.stringify(apiResponse.parsed_content_list[0], null, 2).substring(
-          0,
-          200
-        )
-      );
-    }
-
-    // Transform API response to our internal format
     const elements: UIElement[] =
       apiResponse.parsed_content_list?.map((element: any) => ({
         elementId: "",
@@ -84,7 +70,6 @@ export async function callPerceptionApi(
       })) || [];
 
     console.log(`Successfully parsed ${elements.length} UI elements`);
-    console.log(elements);
     return {
       elements,
       screenshot,

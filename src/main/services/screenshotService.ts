@@ -111,7 +111,6 @@ export async function captureGridRegion(
       `Region ${regionIndex} at [${row},${col}]: x=${x}, y=${y}, w=${regionWidth}, h=${regionHeight}`
     );
 
-    // Capture the region using our helper function
     const { buffer, actualWidth, actualHeight } = await captureScreenRegion(
       x,
       y,

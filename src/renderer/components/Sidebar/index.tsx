@@ -1,5 +1,7 @@
 import React, { useState, createContext, useContext } from "react";
 import { Link } from "react-router-dom";
+import { MessageSquare, FlaskConical, History, Sun, Moon } from "lucide-react";
+import { useTheme } from "../../contexts/ThemeContext";
 import { SidebarProps, MenuItem } from "./types";
 import styles from "./styles.module.scss";
 
@@ -35,23 +37,44 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 };
 
-const menuItems: MenuItem[] = [
-  {
-    id: "new-chat",
-    label: "New Chat",
-    icon: "💬",
-    href: "/",
-  },
-  {
-    id: "test",
-    label: "Testing",
-    icon: "🧪",
-    href: "/testing",
-  },
-];
-
 const Sidebar: React.FC<SidebarProps> = ({ className }) => {
   const { isOpen, toggleSidebar } = useSidebar();
+  const { theme, toggleTheme } = useTheme();
+
+  const menuItems: MenuItem[] = [
+    {
+      id: "new-chat",
+      label: "New Chat",
+      icon: "chat",
+      href: "/",
+    },
+    {
+      id: "history",
+      label: "History",
+      icon: "history",
+      href: "/history",
+    },
+    {
+      id: "test",
+      label: "Testing",
+      icon: "test",
+      href: "/testing",
+    },
+  ];
+
+  const getIcon = (iconName: string) => {
+    const iconProps = { size: 20, strokeWidth: 2 };
+    switch (iconName) {
+      case "chat":
+        return <MessageSquare {...iconProps} />;
+      case "history":
+        return <History {...iconProps} />;
+      case "test":
+        return <FlaskConical {...iconProps} />;
+      default:
+        return <MessageSquare {...iconProps} />;
+    }
+  };
 
   return (
     <>
@@ -91,7 +114,9 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                     onClick={item.onClick}
                     title={!isOpen ? item.label : undefined}
                   >
-                    <span className={styles.sidebarMenuIcon}>{item.icon}</span>
+                    <span className={styles.sidebarMenuIcon}>
+                      {getIcon(item.icon)}
+                    </span>
                     {isOpen && (
                       <span className={styles.sidebarMenuText}>
                         {item.label}
@@ -104,20 +129,25 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
           </ul>
         </nav>
 
-        {/* Footer */}
-        {/* <div className={styles.sidebarFooter}>
-          <div className={styles.sidebarUser}>
-            <div className={styles.sidebarUserAvatar}>👤</div>
+        {/* Footer with Theme Toggle */}
+        <div className={styles.sidebarFooter}>
+          <button
+            className={styles.themeToggle}
+            onClick={toggleTheme}
+            title={
+              theme === "light" ? "Switch to dark mode" : "Switch to light mode"
+            }
+          >
+            <span className={styles.themeToggleIcon}>
+              {theme === "light" ? <Moon size={20} /> : <Sun size={20} />}
+            </span>
             {isOpen && (
-              <div className={styles.sidebarUserInfo}>
-                <span className={styles.sidebarUserName}>User</span>
-                <span className={styles.sidebarUserEmail}>
-                  user@example.com
-                </span>
-              </div>
+              <span className={styles.themeToggleText}>
+                {theme === "light" ? "Dark Mode" : "Light Mode"}
+              </span>
             )}
-          </div>
-        </div> */}
+          </button>
+        </div>
       </aside>
     </>
   );
