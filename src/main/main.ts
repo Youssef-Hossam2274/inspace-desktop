@@ -10,9 +10,9 @@ const __dirname = path.dirname(__filename);
 const isDev = process.env.NODE_ENV === "development";
 
 let mainWindow: BrowserWindow | null = null;
+let approvalResolve: ((decision: "approve" | "retry") => void) | null = null;
 
 function createWindow(): void {
-  // Create the browser window.
   mainWindow = new BrowserWindow({
     height: 800,
     width: 1200,
@@ -23,7 +23,6 @@ function createWindow(): void {
     },
   });
 
-  // Load the app
   if (isDev) {
     mainWindow.loadURL("http://localhost:3000");
     mainWindow.webContents.openDevTools();
@@ -32,14 +31,8 @@ function createWindow(): void {
   }
 }
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
 app.whenReady().then(createWindow);
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
     app.quit();
@@ -47,29 +40,72 @@ app.on("window-all-closed", () => {
 });
 
 app.on("activate", () => {
-  // On macOS it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
   }
 });
 
 ipcMain.handle("execute-prompt", async (event, userPrompt: string) => {
-  console.log(`Received prompt: ${userPrompt}`);
+  console.log("[MAIN] Received execute-prompt:", userPrompt);
+
   try {
-    const result = await executeAgentWorkflow(userPrompt);
-    return { success: true, result };
-  } catch (error) {
-    console.error(
-      "Error executing agent workflow:",
-      error instanceof Error ? error.message : error
+    const result = await executeAgentWorkflow(
+      userPrompt,
+      undefined,
+      async (state) => {
+        // This callback is called when approval is needed
+        console.log("[MAIN] Approval needed, sending to renderer...");
+
+        // Send approval request to renderer with action plan details
+        mainWindow?.webContents.send("approval-needed", {
+          actionPlan: state.action_plan,
+          iteration: state.iteration_count,
+        });
+
+        // Wait for user decision
+        return new Promise<"approve" | "retry">((resolve) => {
+          approvalResolve = resolve;
+        });
+      }
     );
+    if (mainWindow) {
+      mainWindow.show();
+      mainWindow.focus();
+    }
+
+    return {
+      success: result.status === "completed",
+      result,
+      error: result.status === "failed" ? result.last_error : undefined,
+    };
+  } catch (error) {
+    console.error("[MAIN] Workflow error:", error);
+    if (mainWindow) {
+      mainWindow.show();
+      mainWindow.focus();
+    }
+
     return {
       success: false,
       error: error instanceof Error ? error.message : String(error),
     };
   }
 });
+
+// Handle approval decision from renderer
+ipcMain.handle(
+  "approval-decision",
+  async (event, decision: "approve" | "retry") => {
+    console.log("[MAIN] Received approval decision:", decision);
+
+    if (approvalResolve) {
+      approvalResolve(decision);
+      approvalResolve = null;
+    } else {
+      console.error("[MAIN] No approval resolver available!");
+    }
+  }
+);
 
 ipcMain.handle("cua-actions", cuaActions);
 

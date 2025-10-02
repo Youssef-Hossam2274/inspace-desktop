@@ -29,8 +29,6 @@ Available Actions (all require target.elementId unless noted):
 - wait (parameters.duration, no target)
 - scroll (optional target, + parameters.direction, amount)
 - clear_input, copy, paste
-- assert_text (+ parameters.expected_text)
-- drag_and_drop (parameters.from_elementId, to_elementId, no target)
 - screenshot (optional target)
 
 JSON Schema:
@@ -106,16 +104,6 @@ ${elementsDescription}
 
 ${previousActionsDescription}
 
-Instructions:
-1. Analyze the current UI state shown above
-2. Determine what logical step to take in THIS iteration toward the goal
-3. Generate 1-5 actions for this iteration
-4. Add wait(2000-3000ms) after actions that trigger UI changes
-5. Define verification criteria to check if this iteration succeeded
-6. Set next_action:
-   - "complete" if the entire user goal is now accomplished
-   - "continue" if more iterations are needed
-
 Respond with ONLY valid JSON, no other text.`;
   }
   private static buildIterationContext(context: LLMContext): string {
@@ -130,7 +118,7 @@ Respond with ONLY valid JSON, no other text.`;
 
     return `This is ITERATION ${context.iteration_count}.
 Previous iterations completed ${successCount}/${actionCount} actions successfully.
-The screenshot above shows the CURRENT state after previous actions.
+The elements above shows the CURRENT state after previous actions.
 Analyze what changed and decide the next logical step.`;
   }
 

@@ -3,14 +3,17 @@ graph TD;
 	__start__([<p>__start__</p>]):::first
 	perception(perception)
 	reasoning(reasoning)
+	approval(approval<hr/><small><em>__interrupt = before</em></small>)
 	action(action)
 	verification(verification)
 	error_recovery(error_recovery)
 	__end__([<p>__end__</p>]):::last
 	__start__ --> perception;
 	perception --> reasoning;
-	reasoning -.-> action;
+	reasoning -.-> approval;
 	reasoning -. &nbsp;end&nbsp; .-> __end__;
+	approval -.-> action;
+	approval -.-> perception;
 	action -.-> verification;
 	action -.-> error_recovery;
 	verification -.-> perception;

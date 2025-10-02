@@ -1,33 +1,67 @@
 import { GraphState } from "../GraphState";
 
-/**
- * After Perception: Always go to reasoning to analyze current state
- */
 export function afterPerception(state: typeof GraphState.State): string {
   console.log("[AfterPerception] Moving to reasoning...");
   return "reasoning";
 }
 
-/**
- * After Reasoning: Decide if we execute actions or end
- */
 export function afterReasoning(state: typeof GraphState.State): string {
   console.log("[AfterReasoning] Determining next step...");
 
+  // Check iteration limit
+  if ((state.iteration_count || 0) >= (state.max_iterations || 10)) {
+    console.log("[AfterReasoning] Max iterations reached - ending");
+    return "end";
+  }
+
+  // Check if task is complete
   if (!state.action_plan || !state.action_plan.actions?.length) {
     console.log("[AfterReasoning] No actions planned - task complete");
     return "end";
   }
 
+  if (state.action_plan.next_action === "complete") {
+    console.log("[AfterReasoning] LLM marked task as complete - ending");
+    return "end";
+  }
+
   console.log(
-    `[AfterReasoning] Plan has ${state.action_plan.actions.length} actions`
+    `[AfterReasoning] Plan has ${state.action_plan.actions.length} actions - going to approval`
   );
-  return "action";
+  return "approval";
 }
 
 /**
- * After Action: Continue executing actions OR verify when batch is done
+ * After approval check - determines if we have user decision or need to wait
+ * This is called AFTER the approval node executes
  */
+export function afterApprovalCheck(state: typeof GraphState.State): string {
+  console.log("[AfterApprovalCheck] Checking approval status...");
+
+  // If no user decision yet, end and wait for input
+  if (!state.user_decision || state.pending_approval) {
+    console.log(
+      "[AfterApprovalCheck] No decision yet - ending to wait for user"
+    );
+    return "wait";
+  }
+
+  if (state.user_decision === "retry") {
+    console.log(
+      "[AfterApprovalCheck] User requested retry - back to perception"
+    );
+    return "perception";
+  }
+
+  if (state.user_decision === "approve") {
+    console.log("[AfterApprovalCheck] User approved - executing actions");
+    return "action";
+  }
+
+  console.warn("[AfterApprovalCheck] Unknown decision, defaulting to action");
+  return "action";
+}
+
 export function afterAction(state: typeof GraphState.State): string {
   console.log("[AfterAction] Evaluating action completion...");
 
@@ -46,7 +80,6 @@ export function afterAction(state: typeof GraphState.State): string {
   const currentStepIndex = state.action_plan?.current_step ?? 0;
   const totalActions = state.action_plan?.actions.length ?? 0;
 
-  // Check if there are more actions in current plan
   if (currentStepIndex < totalActions) {
     console.log(
       `[AfterAction] Continuing to action ${currentStepIndex + 1}/${totalActions}`
@@ -54,70 +87,89 @@ export function afterAction(state: typeof GraphState.State): string {
     return "action";
   }
 
-  // All actions completed - go to verification
   console.log(
     "[AfterAction] All actions in plan completed - verifying iteration"
   );
   return "verification";
 }
 
-/**
- * After Verification: Most important - decide if iteration succeeded and what's next
- */
 export function afterVerification(state: typeof GraphState.State): string {
   console.log("[AfterVerification] Analyzing iteration results...");
 
-  // Check iteration limit first
+  // Check iteration limit FIRST
   if ((state.iteration_count || 0) >= (state.max_iterations || 10)) {
     console.log("[AfterVerification] Max iterations reached - ending");
     return "end";
   }
 
-  // Check if LLM marked task as complete
+  // Check if task is marked complete
   if (
     state.action_plan?.status === "completed" ||
     state.action_plan?.next_action === "complete"
   ) {
-    console.log("[AfterVerification] Task marked as complete by LLM - ending");
+    console.log("[AfterVerification] Task marked as complete - ending");
     return "end";
   }
 
-  // Check verification criteria
   const batchVerification = state.action_plan?.batch_verification;
 
+  // If no verification criteria, check if LLM thinks we should continue
   if (
     !batchVerification?.success_criteria ||
     batchVerification.success_criteria.length === 0
   ) {
+    // No verification - check action plan's next_action
+    if (state.action_plan?.next_action === "complete") {
+      console.log("[AfterVerification] Action plan says complete - ending");
+      return "end";
+    }
+
     console.log(
       "[AfterVerification] No verification criteria - continuing to next iteration"
     );
     return "perception";
   }
 
-  // Verify the criteria
+  // Verify criteria
   const verificationPassed = checkAllCriteria(
     batchVerification.success_criteria,
     state.perception_result?.elements || []
   );
 
   if (verificationPassed) {
+    console.log("[AfterVerification] Verification PASSED");
+
+    // SUCCESS! But should we continue or end?
+    if (state.action_plan?.next_action === "complete") {
+      console.log("[AfterVerification] Task complete - ending");
+      return "end";
+    }
+
+    // Check if we're just opening Discord (initial step)
+    const userPrompt = state.user_prompt.toLowerCase();
+
+    // If prompt is just "open discord" and discord is open, we're done
+    if (userPrompt.includes("open discord") && !userPrompt.includes("and")) {
+      console.log(
+        "[AfterVerification] Simple 'open discord' task complete - ending"
+      );
+      return "end";
+    }
+
     console.log(
-      "[AfterVerification] Verification PASSED - starting next iteration"
+      "[AfterVerification] Verification passed, starting next iteration"
     );
-    // Reset retry count on success
     return "perception";
   } else {
-    console.log("[AfterVerification] Verification FAILED - retry or continue");
+    console.log("[AfterVerification] Verification FAILED");
 
     const retryCount = state.retry_count || 0;
     const maxRetries = state.max_retries || 2;
 
     if (retryCount >= maxRetries) {
       console.log(
-        "[AfterVerification] Max retries for this iteration - moving to next anyway"
+        "[AfterVerification] Max retries reached - moving forward anyway"
       );
-      // Continue to next iteration even if verification failed
       return "perception";
     }
 
@@ -128,9 +180,6 @@ export function afterVerification(state: typeof GraphState.State): string {
   }
 }
 
-/**
- * Check all verification criteria
- */
 function checkAllCriteria(
   criteria: Array<{ type: string; content: string }>,
   elements: any[]
@@ -144,22 +193,19 @@ function checkAllCriteria(
 
     if (!passed) {
       console.log(
-        `[Verification] ✗ FAILED: ${criterion.type} - "${criterion.content}"`
+        `[Verification] FAILED: ${criterion.type} - "${criterion.content}"`
       );
       return false;
     }
 
     console.log(
-      `[Verification] ✓ PASSED: ${criterion.type} - "${criterion.content}"`
+      `[Verification] PASSED: ${criterion.type} - "${criterion.content}"`
     );
   }
 
   return true;
 }
 
-/**
- * Check a single verification criterion
- */
 function checkSingleCriterion(
   criterion: { type: string; content: string },
   elements: any[]
@@ -190,9 +236,6 @@ function checkSingleCriterion(
   }
 }
 
-/**
- * After Error Recovery: Retry or fail
- */
 export function afterErrorRecovery(state: typeof GraphState.State): string {
   console.log("[AfterErrorRecovery] Handling recovery...");
 

@@ -59,7 +59,6 @@ export async function reasoningNode(
       };
     }
 
-    // If LLM says task is complete (no actions or next_action is "complete")
     if (
       !actionPlan.actions ||
       actionPlan.actions.length === 0 ||

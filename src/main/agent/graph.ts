@@ -5,43 +5,48 @@ import { actionNode } from "./nodes/action.js";
 import { verificationNode } from "./nodes/verification.js";
 import { GraphState } from "./GraphState.js";
 import { errorRecoveryNode } from "./nodes/error.js";
+import { approvalNode, afterApproval } from "./nodes/approval.js";
 import {
-  afterPerception,
   afterAction,
   afterReasoning,
   afterVerification,
   afterErrorRecovery,
 } from "./nodes/conditional.js";
-import { StateGraph } from "@langchain/langgraph";
+import { StateGraph, MemorySaver, interrupt } from "@langchain/langgraph";
 
 export async function createAgentWorkflow() {
   const workflow = new StateGraph(GraphState)
     .addNode("perception", perceptionNode)
     .addNode("reasoning", reasoningNode)
+    .addNode("approval", approvalNode)
     .addNode("action", actionNode)
     .addNode("verification", verificationNode)
     .addNode("error_recovery", errorRecoveryNode)
 
-    // Start each iteration with perception
     .setEntryPoint("perception")
 
-    // After perception: always reason about current state
     .addEdge("perception", "reasoning")
 
-    // After reasoning: execute actions or end if task complete
+    // After reasoning: go to approval or end
     .addConditionalEdges("reasoning", afterReasoning, {
-      action: "action",
+      approval: "approval",
       end: "__end__",
     })
 
-    // After action: continue to next action, or verify when batch done
+    // After approval node, route based on user decision
+    .addConditionalEdges("approval", afterApproval, {
+      action: "action",
+      perception: "perception",
+    })
+
+    // After action: continue or verify or error
     .addConditionalEdges("action", afterAction, {
       action: "action",
       verification: "verification",
       error_recovery: "error_recovery",
     })
 
-    // After verification: start new iteration or end
+    // After verification: continue or end
     .addConditionalEdges("verification", afterVerification, {
       perception: "perception",
       end: "__end__",
@@ -53,14 +58,18 @@ export async function createAgentWorkflow() {
       end: "__end__",
     });
 
-  const compiled = workflow.compile();
+  // Use MemorySaver for checkpointing
+  const checkpointer = new MemorySaver();
+  const compiled = workflow.compile({
+    checkpointer,
+    interruptBefore: ["approval"], // This will pause BEFORE approval node
+  });
 
-  // Save workflow diagram
   try {
     const graphObj = compiled.getGraph();
     const mermaidSource = graphObj.drawMermaid();
     fs.writeFileSync("workflow.mmd", mermaidSource);
-    console.log("✓ Saved workflow diagram to workflow.mmd");
+    console.log("Saved workflow diagram to workflow.mmd");
   } catch (error) {
     console.warn("Could not save workflow diagram:", error);
   }
@@ -87,45 +96,109 @@ export function createInitialState(
     element_map: new Map(),
     retry_count: 0,
     max_retries: 2,
+    pending_approval: false,
+    user_decision: null,
   };
 }
 
 export async function executeAgentWorkflow(
   userPrompt: string,
-  testId?: string
+  testId?: string,
+  onApprovalNeeded?: (
+    state: typeof GraphState.State
+  ) => Promise<"approve" | "retry">
 ) {
-  console.log(`\n${"=".repeat(60)}`);
-  console.log(`Starting Agent Workflow`);
   console.log(`User Goal: "${userPrompt}"`);
-  console.log(`${"=".repeat(60)}\n`);
-
   const graph = await createAgentWorkflow();
-  const initialState = createInitialState(userPrompt, testId);
+  let currentState = createInitialState(userPrompt, testId);
+
+  // Create a unique thread ID for this workflow execution
+  const threadId = testId || `thread_${Date.now()}`;
+  const config = { configurable: { thread_id: threadId } };
 
   try {
-    const result = await graph.invoke(initialState, {
-      recursionLimit: 50, // Increased limit but workflow should end naturally
-    });
+    while (true) {
+      console.log(
+        `[WORKFLOW] Invoking graph with status: ${currentState.status}`
+      );
 
-    console.log(`\n${"=".repeat(60)}`);
-    console.log(`Workflow Completed`);
-    console.log(`${"=".repeat(60)}`);
-    console.log(`Final Status: ${result.status}`);
-    console.log(`Total Iterations: ${result.iteration_count}`);
-    console.log(`Actions Executed: ${result.action_results?.length || 0}`);
-    console.log(`Errors: ${result.errors?.length || 0}`);
+      // Invoke the graph - will stop at interruption points
+      let result = await graph.invoke(currentState, config);
 
-    if (result.errors?.length > 0) {
-      console.log(`\nErrors encountered:`);
-      result.errors.forEach((err, i) => console.log(`  ${i + 1}. ${err}`));
+      console.log(`[WORKFLOW] Graph returned with status: ${result.status}`);
+
+      // Get the current state from checkpointer to see where we are
+      const checkpointState = await graph.getState(config);
+      console.log(`[WORKFLOW] Checkpoint - Next node: ${checkpointState.next}`);
+
+      // Check if we're interrupted at approval node
+      if (checkpointState.next && checkpointState.next.includes("approval")) {
+        console.log("[WORKFLOW] ⏸️  Graph interrupted before approval node");
+
+        if (!onApprovalNeeded) {
+          console.error("[WORKFLOW] No approval callback provided!");
+          return {
+            ...result,
+            status: "failed" as const,
+            last_error: "No approval callback provided",
+            errors: [...result.errors, "No approval callback provided"],
+          };
+        }
+
+        // Wait for user decision
+        console.log("[WORKFLOW] Requesting user approval...");
+        const decision = await onApprovalNeeded(result);
+
+        console.log(`[WORKFLOW] ▶️  User decision: ${decision}`);
+
+        // Update ONLY the specific fields in the checkpoint
+        console.log(
+          "[WORKFLOW] Updating checkpoint state with user decision..."
+        );
+        await graph.updateState(config, {
+          user_decision: decision,
+          pending_approval: false,
+        });
+
+        // Resume from approval node - it will now see the user_decision
+        console.log("[WORKFLOW] Resuming execution...");
+        result = await graph.invoke(null, config);
+
+        // Update currentState with result after approval
+        currentState = result;
+
+        continue;
+      }
+
+      // Check for completion
+      if (result.status === "completed") {
+        console.log(`[WORKFLOW] ✅ Task completed successfully!`);
+        console.log(`Total Iterations: ${result.iteration_count}`);
+        console.log(`Actions Executed: ${result.action_results?.length || 0}`);
+        return result;
+      }
+
+      if (result.status === "failed") {
+        console.log(`[WORKFLOW] ❌ Task failed`);
+        console.log(`Error: ${result.last_error}`);
+        console.log(`Total Errors: ${result.errors?.length || 0}`);
+        return result;
+      }
+
+      // If we reach here without interruption and status is running, workflow completed
+      if (result.status === "running" && !checkpointState.next) {
+        console.log(`[WORKFLOW] ✅ Workflow completed normally`);
+        return {
+          ...result,
+          status: "completed" as const,
+        };
+      }
+
+      // Update state and continue
+      currentState = result;
     }
-
-    return result;
   } catch (error) {
-    console.error(`\n${"=".repeat(60)}`);
-    console.error(`Workflow Failed`);
-    console.error(`${"=".repeat(60)}`);
-    console.error(error);
+    console.error(`[WORKFLOW] Fatal error:`, error);
     throw error;
   }
 }

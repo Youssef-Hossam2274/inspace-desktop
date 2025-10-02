@@ -10,12 +10,12 @@ export async function perceptionNode(
   );
 
   try {
-    console.log("[Perception] Capturing full-screen screenshot...");
+    console.log("Capturing full-screen screenshot...");
     const screenshot = await captureScreenshot();
 
     if (!screenshot) {
       const error = "Failed to capture screenshot";
-      console.error(`[Perception] ${error}`);
+      console.error(`${error}`);
       return {
         status: "failed",
         last_error: error,
@@ -23,7 +23,7 @@ export async function perceptionNode(
       };
     }
 
-    console.log("[Perception] Analyzing screenshot with perception API...");
+    console.log("Analyzing screenshot with perception API...");
     const perceptionResult = await callPerceptionApi(screenshot);
 
     if (!perceptionResult.success) {

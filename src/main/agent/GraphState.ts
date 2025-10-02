@@ -12,7 +12,9 @@ export const GraphState = Annotation.Root({
   max_iterations: Annotation<number>,
   retry_count: Annotation<number>,
   max_retries: Annotation<number>,
-  status: Annotation<"running" | "completed" | "failed">,
+  status: Annotation<"running" | "completed" | "failed" | "awaiting_approval">,
   errors: Annotation<string[]>,
   last_error: Annotation<string>,
+  pending_approval: Annotation<boolean>,
+  user_decision: Annotation<"approve" | "retry" | null>,
 });
