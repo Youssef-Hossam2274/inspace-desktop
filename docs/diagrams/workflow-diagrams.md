@@ -58,7 +58,7 @@ This document provides a breakdown of the **Perception Phase** and **Reasoning P
         PythonServer->>Agent: execute command
         Agent->>SUT: perform action (click/type/navigate)
         SUT-->>Agent: action result
-        Agent-->>PythonServer: execution status
+        Agent-->>backEnd: execution status
         end
     end
     
