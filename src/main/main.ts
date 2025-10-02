@@ -56,6 +56,12 @@ ipcMain.handle("execute-prompt", async (event, userPrompt: string) => {
         // This callback is called when approval is needed
         console.log("[MAIN] Approval needed, sending to renderer...");
 
+        // SHOW WINDOW when approval is needed
+        if (mainWindow) {
+          mainWindow.show();
+          mainWindow.focus();
+        }
+
         // Send approval request to renderer with action plan details
         mainWindow?.webContents.send("approval-needed", {
           actionPlan: state.action_plan,
@@ -68,6 +74,8 @@ ipcMain.handle("execute-prompt", async (event, userPrompt: string) => {
         });
       }
     );
+
+    // Show window at the end too
     if (mainWindow) {
       mainWindow.show();
       mainWindow.focus();
@@ -101,6 +109,11 @@ ipcMain.handle(
     if (approvalResolve) {
       approvalResolve(decision);
       approvalResolve = null;
+
+      // Hide window after decision is made
+      if (mainWindow) {
+        mainWindow.hide();
+      }
     } else {
       console.error("[MAIN] No approval resolver available!");
     }

@@ -6,7 +6,6 @@ graph TD;
 	approval(approval<hr/><small><em>__interrupt = before</em></small>)
 	action(action)
 	verification(verification)
-	error_recovery(error_recovery)
 	__end__([<p>__end__</p>]):::last
 	__start__ --> perception;
 	perception --> reasoning;
@@ -15,11 +14,9 @@ graph TD;
 	approval -.-> action;
 	approval -.-> perception;
 	action -.-> verification;
-	action -.-> error_recovery;
+	action -.-> perception;
 	verification -.-> perception;
 	verification -. &nbsp;end&nbsp; .-> __end__;
-	error_recovery -.-> perception;
-	error_recovery -. &nbsp;end&nbsp; .-> __end__;
 	action -.-> action;
 	classDef default fill:#f2f0ff,line-height:1.2;
 	classDef first fill-opacity:0;

@@ -17,4 +17,5 @@ export const GraphState = Annotation.Root({
   last_error: Annotation<string>,
   pending_approval: Annotation<boolean>,
   user_decision: Annotation<"approve" | "retry" | null>,
+  verification_passed: Annotation<boolean | undefined>,
 });

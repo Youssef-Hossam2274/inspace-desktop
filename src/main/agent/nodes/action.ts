@@ -10,7 +10,6 @@ import { typingAction } from "../../NutActions/actions/typing.js";
 import { keyPressAction } from "../../NutActions/actions/keypress.js";
 import { keyComboAction } from "../../NutActions/actions/keycombo.js";
 import { hoverAction } from "../../NutActions/actions/hover.js";
-import { scrollAction } from "../../NutActions/actions/scroll.js";
 import { copyAction } from "../../NutActions/actions/copy.js";
 import { pasteAction } from "../../NutActions/actions/paste.js";
 import { clearInputAction } from "../../NutActions/actions/clearInput.js";

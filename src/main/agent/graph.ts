@@ -1,18 +1,151 @@
+// graph.ts - SIMPLIFIED VERSION
 import fs from "fs";
 import { perceptionNode } from "./nodes/perception.js";
 import { reasoningNode } from "./nodes/reasoning.js";
 import { actionNode } from "./nodes/action.js";
 import { verificationNode } from "./nodes/verification.js";
 import { GraphState } from "./GraphState.js";
-import { errorRecoveryNode } from "./nodes/error.js";
-import { approvalNode, afterApproval } from "./nodes/approval.js";
-import {
-  afterAction,
-  afterReasoning,
-  afterVerification,
-  afterErrorRecovery,
-} from "./nodes/conditional.js";
-import { StateGraph, MemorySaver, interrupt } from "@langchain/langgraph";
+import { approvalNode } from "./nodes/approval.js";
+import { StateGraph, MemorySaver } from "@langchain/langgraph";
+
+// SIMPLIFIED ROUTING FUNCTIONS
+function afterReasoning(state: typeof GraphState.State): string {
+  if ((state.iteration_count || 0) >= (state.max_iterations || 10)) {
+    return "end";
+  }
+
+  if (
+    !state.action_plan?.actions?.length ||
+    state.action_plan.next_action === "complete"
+  ) {
+    return "end";
+  }
+
+  return "approval";
+}
+
+function afterApproval(state: typeof GraphState.State): string {
+  if (state.user_decision === "retry") {
+    return "perception";
+  }
+  return "action"; // Always go to action after approval
+}
+
+function afterAction(state: typeof GraphState.State): string {
+  const lastResult = state.action_results?.[state.action_results.length - 1];
+
+  // If action failed, retry perception
+  if (!lastResult?.success) {
+    return "perception";
+  }
+
+  const currentStep = state.action_plan?.current_step ?? 0;
+  const totalActions = state.action_plan?.actions.length ?? 0;
+
+  // If more actions remain, continue executing
+  if (currentStep < totalActions) {
+    return "action";
+  }
+
+  // All actions complete → verify
+  return "verification";
+}
+
+function afterVerification(state: typeof GraphState.State): string {
+  console.log("[AfterVerification] Analyzing results...");
+
+  if ((state.iteration_count || 0) >= (state.max_iterations || 10)) {
+    console.log("[AfterVerification] Max iterations reached");
+    return "end";
+  }
+
+  const batchVerification = state.action_plan?.batch_verification;
+
+  // Check verification results
+  const verificationPassed = checkVerificationCriteria(
+    batchVerification?.success_criteria || [],
+    state.perception_result?.elements || []
+  );
+
+  console.log(
+    `[AfterVerification] Verification: ${verificationPassed ? "PASSED" : "FAILED"}`
+  );
+  console.log(
+    `[AfterVerification] Next action: ${state.action_plan?.next_action}`
+  );
+
+  if (verificationPassed) {
+    // Verification passed - check if LLM says task is complete
+    if (state.action_plan?.next_action === "complete") {
+      console.log("[AfterVerification] Task marked complete by LLM - ending");
+      return "end";
+    }
+
+    // Check if this is a simple "open X" task that's already complete
+    const userPrompt = state.user_prompt.toLowerCase().trim();
+    const isSimpleOpenTask = /^open\s+\w+$/i.test(userPrompt); // "open discord", "open chrome", etc.
+
+    if (isSimpleOpenTask && verificationPassed) {
+      console.log("[AfterVerification] Simple open task complete - ending");
+      return "end";
+    }
+
+    console.log(
+      "[AfterVerification] Verification passed, continuing to next iteration"
+    );
+    return "perception";
+  } else {
+    // Verification failed - retry
+    console.log("[AfterVerification] Verification failed, retrying perception");
+    return "perception";
+  }
+}
+
+function checkVerificationCriteria(
+  criteria: Array<{ type: string; content: string }>,
+  elements: any[]
+): boolean {
+  for (const criterion of criteria) {
+    const passed = checkSingleCriterion(criterion, elements);
+    if (!passed) {
+      console.log(
+        `[Verification] FAILED: ${criterion.type} - "${criterion.content}"`
+      );
+      return false;
+    }
+    console.log(
+      `[Verification] PASSED: ${criterion.type} - "${criterion.content}"`
+    );
+  }
+  return true;
+}
+
+function checkSingleCriterion(
+  criterion: { type: string; content: string },
+  elements: any[]
+): boolean {
+  switch (criterion.type) {
+    case "text_present":
+      return elements.some((el) =>
+        el.content?.toLowerCase().includes(criterion.content.toLowerCase())
+      );
+    case "element_visible":
+      return elements.some(
+        (el) =>
+          el.type?.toLowerCase().includes(criterion.content.toLowerCase()) ||
+          el.content?.toLowerCase().includes(criterion.content.toLowerCase())
+      );
+    case "element_not_visible":
+      return !elements.some(
+        (el) =>
+          el.type?.toLowerCase().includes(criterion.content.toLowerCase()) ||
+          el.content?.toLowerCase().includes(criterion.content.toLowerCase())
+      );
+    default:
+      console.warn(`[Verification] Unknown criterion type: ${criterion.type}`);
+      return true;
+  }
+}
 
 export async function createAgentWorkflow() {
   const workflow = new StateGraph(GraphState)
@@ -21,48 +154,37 @@ export async function createAgentWorkflow() {
     .addNode("approval", approvalNode)
     .addNode("action", actionNode)
     .addNode("verification", verificationNode)
-    .addNode("error_recovery", errorRecoveryNode)
 
     .setEntryPoint("perception")
 
+    // Linear flow with simple conditionals
     .addEdge("perception", "reasoning")
 
-    // After reasoning: go to approval or end
     .addConditionalEdges("reasoning", afterReasoning, {
       approval: "approval",
       end: "__end__",
     })
 
-    // After approval node, route based on user decision
     .addConditionalEdges("approval", afterApproval, {
       action: "action",
       perception: "perception",
     })
 
-    // After action: continue or verify or error
     .addConditionalEdges("action", afterAction, {
       action: "action",
       verification: "verification",
-      error_recovery: "error_recovery",
-    })
-
-    // After verification: continue or end
-    .addConditionalEdges("verification", afterVerification, {
       perception: "perception",
-      end: "__end__",
     })
 
-    // After error recovery: retry or end
-    .addConditionalEdges("error_recovery", afterErrorRecovery, {
+    .addConditionalEdges("verification", afterVerification, {
       perception: "perception",
       end: "__end__",
     });
 
-  // Use MemorySaver for checkpointing
   const checkpointer = new MemorySaver();
   const compiled = workflow.compile({
     checkpointer,
-    interruptBefore: ["approval"], // This will pause BEFORE approval node
+    interruptBefore: ["approval"],
   });
 
   try {
@@ -98,6 +220,7 @@ export function createInitialState(
     max_retries: 2,
     pending_approval: false,
     user_decision: null,
+    verification_passed: false,
   };
 }
 
@@ -112,7 +235,6 @@ export async function executeAgentWorkflow(
   const graph = await createAgentWorkflow();
   let currentState = createInitialState(userPrompt, testId);
 
-  // Create a unique thread ID for this workflow execution
   const threadId = testId || `thread_${Date.now()}`;
   const config = { configurable: { thread_id: threadId } };
 
@@ -122,79 +244,41 @@ export async function executeAgentWorkflow(
         `[WORKFLOW] Invoking graph with status: ${currentState.status}`
       );
 
-      // Invoke the graph - will stop at interruption points
       let result = await graph.invoke(currentState, config);
-
-      console.log(`[WORKFLOW] Graph returned with status: ${result.status}`);
-
-      // Get the current state from checkpointer to see where we are
       const checkpointState = await graph.getState(config);
-      console.log(`[WORKFLOW] Checkpoint - Next node: ${checkpointState.next}`);
 
-      // Check if we're interrupted at approval node
-      if (checkpointState.next && checkpointState.next.includes("approval")) {
-        console.log("[WORKFLOW] ⏸️  Graph interrupted before approval node");
+      // Handle approval interruption
+      if (checkpointState.next?.includes("approval")) {
+        console.log("[WORKFLOW] Paused for approval");
 
         if (!onApprovalNeeded) {
-          console.error("[WORKFLOW] No approval callback provided!");
-          return {
-            ...result,
-            status: "failed" as const,
-            last_error: "No approval callback provided",
-            errors: [...result.errors, "No approval callback provided"],
-          };
+          throw new Error("No approval callback provided");
         }
 
-        // Wait for user decision
-        console.log("[WORKFLOW] Requesting user approval...");
         const decision = await onApprovalNeeded(result);
+        console.log(`[WORKFLOW] User decision: ${decision}`);
 
-        console.log(`[WORKFLOW] ▶️  User decision: ${decision}`);
-
-        // Update ONLY the specific fields in the checkpoint
-        console.log(
-          "[WORKFLOW] Updating checkpoint state with user decision..."
-        );
         await graph.updateState(config, {
           user_decision: decision,
           pending_approval: false,
         });
 
-        // Resume from approval node - it will now see the user_decision
-        console.log("[WORKFLOW] Resuming execution...");
         result = await graph.invoke(null, config);
-
-        // Update currentState with result after approval
         currentState = result;
-
         continue;
       }
 
-      // Check for completion
-      if (result.status === "completed") {
-        console.log(`[WORKFLOW] ✅ Task completed successfully!`);
-        console.log(`Total Iterations: ${result.iteration_count}`);
-        console.log(`Actions Executed: ${result.action_results?.length || 0}`);
+      // Check completion
+      if (result.status === "completed" || result.status === "failed") {
+        console.log(`[WORKFLOW] Task ${result.status}`);
         return result;
       }
 
-      if (result.status === "failed") {
-        console.log(`[WORKFLOW] ❌ Task failed`);
-        console.log(`Error: ${result.last_error}`);
-        console.log(`Total Errors: ${result.errors?.length || 0}`);
-        return result;
-      }
-
-      // If we reach here without interruption and status is running, workflow completed
+      // Workflow completed without explicit status
       if (result.status === "running" && !checkpointState.next) {
-        console.log(`[WORKFLOW] ✅ Workflow completed normally`);
-        return {
-          ...result,
-          status: "completed" as const,
-        };
+        return { ...result, status: "completed" as const };
       }
 
-      // Update state and continue
       currentState = result;
     }
   } catch (error) {

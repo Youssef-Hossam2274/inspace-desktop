@@ -1,20 +1,17 @@
+// verification.ts - FIXED VERSION
 import { GraphState } from "../GraphState";
 
 export async function verificationNode(
   state: typeof GraphState.State
 ): Promise<Partial<typeof GraphState.State>> {
-  console.log("\n[VERIFICATION] Starting iteration verification...");
+  console.log("\n[VERIFICATION] Checking iteration results...");
   console.log(`[VERIFICATION] Iteration ${state.iteration_count}`);
 
   if (!state.action_plan) {
-    console.log("[VERIFICATION] No action plan - skipping verification");
-    return {
-      status: "running",
-    };
+    return { status: "running" };
   }
 
   if (!state.perception_result) {
-    console.error("[VERIFICATION] No perception result available!");
     return {
       status: "failed",
       last_error: "No perception result for verification",
@@ -24,26 +21,22 @@ export async function verificationNode(
 
   const batchVerification = state.action_plan.batch_verification;
 
-  if (
-    !batchVerification?.success_criteria ||
-    batchVerification.success_criteria.length === 0
-  ) {
-    console.log(
-      "[VERIFICATION] No success criteria defined - iteration complete"
-    );
+  // No verification criteria = assume success
+  if (!batchVerification?.success_criteria?.length) {
+    console.log("[VERIFICATION] No criteria - assuming success");
+
+    // Clear action results so LLM gets fresh context
     return {
       status: "running",
-      retry_count: 0, // Reset retry count on successful iteration
+      action_results: [], // RESET for next iteration
     };
   }
 
   console.log(
-    `[VERIFICATION] Checking ${batchVerification.success_criteria.length} criteria:`
+    `[VERIFICATION] Checking ${batchVerification.success_criteria.length} criteria`
   );
 
   const elements = state.perception_result.elements;
-  console.log(`[VERIFICATION] Available elements: ${elements.length}`);
-
   let allPassed = true;
 
   for (const criterion of batchVerification.success_criteria) {
@@ -62,18 +55,22 @@ export async function verificationNode(
   }
 
   if (allPassed) {
-    console.log("[VERIFICATION] ✓ All criteria passed - iteration successful");
+    console.log("[VERIFICATION] ✓ All criteria passed");
+
+    // IMPORTANT: Clear action_results for next iteration
+    // This prevents LLM from seeing old actions and repeating them
     return {
       status: "running",
-      retry_count: 0, // Reset retry count
+      action_results: [], // RESET for fresh context
+      verification_passed: true, // Flag for routing
     };
   } else {
-    console.log("[VERIFICATION] ✗ Some criteria failed");
-    const retryCount = state.retry_count || 0;
+    console.log("[VERIFICATION] ✗ Verification failed - will retry");
 
+    // Keep action_results so LLM can see what failed
     return {
       status: "running",
-      retry_count: retryCount + 1,
+      verification_passed: false, // Flag for routing
     };
   }
 }

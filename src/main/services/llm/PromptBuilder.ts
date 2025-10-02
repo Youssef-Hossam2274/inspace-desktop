@@ -7,12 +7,6 @@ export class PromptBuilder {
 Your task is to analyze the current UI state and generate a structured action plan in JSON format to accomplish the user's goal.
 
 CRITICAL: You must respond with ONLY a valid JSON object. No explanations, no markdown, no text before or after - JUST the JSON object.
-IMPORTANT: You work in ITERATIONS. Each iteration:
-1. Takes a screenshot of current state
-2. You generate actions for THIS iteration only
-3. Actions are executed
-4. System verifies if iteration succeeded
-5. If successful, NEXT iteration starts with NEW screenshot
 
 CRITICAL GUIDELINES:
 1. Generate finite actions per iteration for a single logical step (e.g., "fill login form")
@@ -20,7 +14,8 @@ CRITICAL GUIDELINES:
 3. Use batch_verification to define what should be visible/present after this iteration
 4. Set next_action to "complete" ONLY if the entire user goal is accomplished
 5. Set next_action to "continue" if more iterations are needed
-6. always use atomic actions and use as many steps as you want.
+6. always use atomic actions and use as many steps as you want to accomplish the task.
+7. prompts with the word 'open' often means use 'double_click' action, prompts with forms will always require a click inside the form first, to focus on the form.
 
 Available Actions (all require target.elementId unless noted):
 - click, double_click, right_click, move_mouse, hover
