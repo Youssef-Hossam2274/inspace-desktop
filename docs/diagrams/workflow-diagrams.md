@@ -20,7 +20,7 @@ This document provides a breakdown of the **Perception Phase** and **Reasoning P
     participant PythonServer as PythonServer
     participant Perception as Perception Layer
     participant Reasoning as Reasoning Layer
-    participant Agent as Execution Agent
+    participant Agent as Node server 
     participant SUT as System Under Test
 
     %% Test Setup
@@ -129,7 +129,6 @@ The **Reasoning Phase** interprets the perception results, filters possible UI a
     Reasoning->>LLM: generateActionPlan(elements, prompt)
     
     LLM->>LLM: filterElements(top 50)
-    Note right of LLM: Score by:<br/>Interactive +100<br/>Keyword match +50
     
     LLM->>LLM: buildPrompt(filteredElements)
     LLM->>GroqAPI: POST /chat/completions
