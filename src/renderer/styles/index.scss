@@ -1,5 +1,3 @@
-@import "./themes";
-
 * {
   margin: 0;
   padding: 0;
@@ -7,77 +5,7 @@
 }
 
 body {
-  margin: 0;
   font-family: $font-family-primary;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  @include custom-scrollbar;
-}
-
-// App component styles
-.app {
-  &-header {
-    background: $gradient-primary;
-    color: var(--text-inverse);
-    padding: spacing(6) spacing(8);
-    box-shadow: var(--shadow-md);
-    position: relative;
-
-    &__controls {
-      @include flex-between;
-      align-items: center;
-      margin-bottom: spacing(4);
-
-      h1 {
-        @include responsive-heading-2;
-        font-weight: $font-weight-bold;
-        margin: 0;
-      }
-    }
-
-    p {
-      @include text-large;
-      opacity: 0.9;
-      margin: 0;
-      text-align: center;
-    }
-  }
-
-  &-main {
-    flex: 1;
-    padding: spacing(8);
-    @include flex-center;
-    align-items: flex-start;
-    overflow-y: auto;
-  }
-}
-
-// Feature card styles
-.feature-card {
-  @include card-interactive;
-  max-width: 500px;
-  width: 100%;
-
-  h2 {
-    @include heading-3;
-    color: var(--primary-color);
-    margin-bottom: spacing(4);
-  }
-
-  ul {
-    list-style: none;
-
-    li {
-      padding: spacing(2) 0;
-      @include text-normal;
-      @include transition(all, 0.3s, ease);
-
-      &:hover {
-        color: var(--primary-color);
-        transform: translateX(spacing(2));
-      }
-    }
-  }
 }

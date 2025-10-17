@@ -24,7 +24,7 @@ export default defineConfig({
     },
     preprocessorOptions: {
       scss: {
-        additionalData: `@use "@/styles/_colors" as *; @use "@/styles/_utils" as *; @use "@/styles/_typography" as *;`,
+        additionalData: `@use "@/styles/_utils" as *; @use "@/styles/_typography" as *; @use "@/styles/_themes" as *;`,
       },
     },
   },

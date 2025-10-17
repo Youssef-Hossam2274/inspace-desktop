@@ -1,7 +1,6 @@
 import { FC, useState, useRef, useEffect, useCallback } from "react";
 import ChatInput from "../../ChatInput";
 import ActionPlanApproval from "../../ActionPlanApproval";
-import { useHistory } from "../../../contexts/HistoryContext";
 import styles from "./styles.module.scss";
 
 interface Message {
@@ -22,7 +21,6 @@ const NewChat: FC = () => {
   const [currentIteration, setCurrentIteration] = useState<number>(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const { addHistoryItem } = useHistory();
 
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
@@ -115,12 +113,6 @@ const NewChat: FC = () => {
 
     // If aborted, add to history and stop processing
     if (decision === "abort") {
-      addHistoryItem({
-        prompt: currentPrompt,
-        status: "aborted",
-        result: "Execution was aborted by user",
-        iteration: currentIteration,
-      });
       setIsProcessing(false);
       await window.electronAPI.showWindow();
     }
@@ -149,15 +141,6 @@ const NewChat: FC = () => {
       const result = await window.electronAPI.executePrompt(content);
       console.log("Execution result:", result);
 
-      // Add to history
-      addHistoryItem({
-        prompt: content,
-        status: result.success ? "success" : "failed",
-        result: result.success ? "Task completed successfully" : undefined,
-        error: result.success ? undefined : result.error,
-        iteration: currentIteration,
-      });
-
       // Show completion message
       const completionMessage: Message = {
         id: Date.now().toString(),
@@ -173,12 +156,6 @@ const NewChat: FC = () => {
       console.error("Error executing prompt:", error);
 
       // Add error to history
-      addHistoryItem({
-        prompt: content,
-        status: "failed",
-        error: String(error),
-        iteration: currentIteration,
-      });
 
       const errorMessage: Message = {
         id: Date.now().toString(),

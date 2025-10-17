@@ -49,12 +49,6 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       href: "/",
     },
     {
-      id: "history",
-      label: "History",
-      icon: "history",
-      href: "/history",
-    },
-    {
       id: "test",
       label: "Testing",
       icon: "test",

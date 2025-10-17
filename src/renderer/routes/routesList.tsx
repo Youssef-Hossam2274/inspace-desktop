@@ -10,10 +10,6 @@ const routesList: Record<string, RouteObject[]> = {
   common: [
     { path: "/", element: <NewChat /> },
     { path: "testing", element: <TestingPage /> },
-    {
-      path: "/history",
-      element: <History />,
-    },
   ],
 };
 
