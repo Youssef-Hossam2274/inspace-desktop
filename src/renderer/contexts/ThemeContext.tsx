@@ -32,6 +32,12 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     // Apply theme to document
     document.documentElement.setAttribute("data-theme", theme);
+    // Apply dark class for Tailwind
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
   }, [theme]);
 
   const toggleTheme = () => {

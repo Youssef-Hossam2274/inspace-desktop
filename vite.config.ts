@@ -18,15 +18,7 @@ export default defineConfig({
     strictPort: true,
   },
   css: {
-    modules: {
-      localsConvention: "camelCaseOnly",
-      generateScopedName: "[name]__[local]___[hash:base64:5]",
-    },
-    preprocessorOptions: {
-      scss: {
-        additionalData: `@use "@/styles/_colors" as *; @use "@/styles/_utils" as *; @use "@/styles/_typography" as *;`,
-      },
-    },
+    postcss: "./postcss.config.js",
   },
   resolve: {
     alias: {

@@ -2,7 +2,6 @@ import { FC, useState, useRef, useEffect, useCallback } from "react";
 import ChatInput from "../../ChatInput";
 import ActionPlanApproval from "../../ActionPlanApproval";
 import { useHistory } from "../../../contexts/HistoryContext";
-import styles from "./styles.module.scss";
 
 interface Message {
   id: string;
@@ -196,15 +195,22 @@ const NewChat: FC = () => {
   };
 
   return (
-    <div className={styles.newChatContainer}>
-      <div className={styles.messagesContainer} ref={messagesContainerRef}>
+    <div className="h-screen flex flex-col bg-bg-dark-primary dark:bg-bg-dark-primary">
+      <div
+        className="flex-1 overflow-y-auto p-6 px-4 flex flex-col scrollbar-thin scrollbar-track-transparent scrollbar-thumb-border-dark-primary dark:scrollbar-thumb-border-dark-primary scrollbar-thumb-rounded-full hover:scrollbar-thumb-text-dark-tertiary dark:hover:scrollbar-thumb-text-dark-tertiary"
+        ref={messagesContainerRef}
+      >
         {messages.length === 0 ? (
-          <div className={styles.welcomeMessage}>
-            <h2>Welcome to InSpace Chat</h2>
-            <p>Ask me anything to get started!</p>
+          <div className="flex flex-col items-center justify-center flex-1 text-center max-w-[600px] mx-auto">
+            <h2 className="text-3xl font-display font-bold text-text-dark-primary dark:text-text-dark-primary mb-4">
+              Welcome to InSpace Chat
+            </h2>
+            <p className="text-lg text-text-dark-secondary dark:text-text-dark-secondary font-normal leading-relaxed">
+              Ask me anything to get started!
+            </p>
           </div>
         ) : (
-          <div className={styles.messagesList}>
+          <div className="max-w-[800px] mx-auto w-full flex flex-col gap-4">
             {messages.map((message) => (
               <div key={message.id}>
                 {message.type === "approval" ? (
@@ -217,16 +223,25 @@ const NewChat: FC = () => {
                   />
                 ) : (
                   <div
-                    className={`${styles.message} ${
-                      message.sender === "user"
-                        ? styles.userMessage
-                        : styles.assistantMessage
-                    }`}
+                    className={`
+                      flex flex-col gap-2 animate-fade-in-up
+                      ${message.sender === "user" ? "items-end" : "items-start"}
+                    `}
                   >
-                    <div className={styles.messageContent}>
+                    <div
+                      className={`
+                        max-w-[70%] p-4 px-5 text-base leading-relaxed break-words whitespace-pre-wrap
+                        shadow-sm-dark dark:shadow-sm-dark transition-transform duration-200 ease-out hover:-translate-y-px
+                        ${
+                          message.sender === "user"
+                            ? "bg-primary text-white rounded-xl rounded-br-sm"
+                            : "bg-bg-dark-secondary dark:bg-bg-dark-secondary text-text-dark-primary dark:text-text-dark-primary border border-border-dark-secondary dark:border-border-dark-secondary rounded-xl rounded-bl-sm"
+                        }
+                      `}
+                    >
                       {message.content}
                     </div>
-                    <div className={styles.messageTime}>
+                    <div className="text-xs text-text-dark-muted dark:text-text-dark-muted mx-2">
                       {message.timestamp.toLocaleTimeString()}
                     </div>
                   </div>
@@ -239,10 +254,23 @@ const NewChat: FC = () => {
         )}
       </div>
 
-      <div className={styles.inputContainer}>
+      <div className="relative p-4 py-0">
         {showScrollButton && (
           <button
-            className={styles.scrollToBottomButton}
+            className="
+              absolute -top-1/2 right-1/2 w-12 h-12 flex items-center justify-center
+              bg-bg-dark-secondary dark:bg-bg-dark-secondary
+              border border-border-dark-secondary dark:border-border-dark-secondary
+              rounded-full text-text-dark-secondary dark:text-text-dark-secondary
+              cursor-pointer shadow-[0_4px_12px_rgba(0,0,0,0.3)] dark:shadow-[0_4px_12px_rgba(0,0,0,0.3)]
+              transition-all duration-200 ease-out z-10
+              hover:bg-bg-dark-tertiary dark:hover:bg-bg-dark-tertiary
+              hover:border-border-dark-primary dark:hover:border-border-dark-primary
+              hover:text-text-dark-primary dark:hover:text-text-dark-primary
+              hover:scale-105 hover:shadow-[0_6px_16px_rgba(0,0,0,0.4)] dark:hover:shadow-[0_6px_16px_rgba(0,0,0,0.4)]
+              active:scale-95
+              animate-slide-in-up
+            "
             onClick={scrollToBottom}
             title="Scroll to bottom"
           >
@@ -255,6 +283,7 @@ const NewChat: FC = () => {
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
+              className="rotate-180 transition-transform duration-200 ease-out"
             >
               <path d="m18 15-6-6-6 6" />
             </svg>
