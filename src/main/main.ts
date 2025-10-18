@@ -18,6 +18,7 @@ function createWindow(): void {
   mainWindow = new BrowserWindow({
     height: 800,
     width: 1200,
+    icon: path.join(__dirname, "../../assets/"),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,

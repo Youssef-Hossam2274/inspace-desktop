@@ -1,0 +1,80 @@
+@use "../../styles/themes" as *;
+
+.logoText {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+}
+
+.logoTextPrimary {
+  letter-spacing: -0.025em;
+  color: var(--primary-color);
+}
+
+.logoTextSecondary {
+  letter-spacing: -0.025em;
+  color: var(--primary-color-light);
+}
+
+.logoContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+// Size variants
+.containerSm {
+  height: 2rem; // h-8
+}
+
+.containerMd {
+  height: 3rem; // h-12
+}
+
+.containerLg {
+  height: 4rem; // h-16
+}
+
+.containerXl {
+  height: 6rem; // h-24
+}
+
+.iconSm {
+  height: 2rem; // h-8
+  width: 2rem; // w-8
+}
+
+.iconMd {
+  height: 3rem; // h-12
+  width: 3rem; // w-12
+}
+
+.iconLg {
+  height: 4rem; // h-16
+  width: 4rem; // w-16
+}
+
+.iconXl {
+  height: 6rem; // h-24
+  width: 6rem; // w-24
+}
+
+.textSm {
+  font-size: 1.25rem; // text-xl
+  line-height: 1.75rem;
+}
+
+.textMd {
+  font-size: 1.875rem; // text-3xl
+  line-height: 2.25rem;
+}
+
+.textLg {
+  font-size: 2.25rem; // text-4xl
+  line-height: 2.5rem;
+}
+
+.textXl {
+  font-size: 3.75rem; // text-6xl
+  line-height: 1;
+}

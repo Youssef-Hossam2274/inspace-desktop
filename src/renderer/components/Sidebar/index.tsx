@@ -4,6 +4,7 @@ import { MessageSquare, FlaskConical, History, Sun, Moon } from "lucide-react";
 import { useTheme } from "../../contexts/ThemeContext";
 import { SidebarProps, MenuItem } from "./types";
 import styles from "./styles.module.scss";
+import { Logo } from "../Icon";
 
 // Context for sidebar state
 interface SidebarContextType {
@@ -24,7 +25,7 @@ export const useSidebar = () => {
 export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
@@ -86,7 +87,14 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
         {/* Header */}
         <div className={styles.sidebarHeader}>
           <div className={styles.sidebarLogo}>
-            {isOpen && <span className={styles.sidebarLogoText}>InSpace</span>}
+            {/* {isOpen && <span className={styles.sidebarLogoText}></span>} */}
+            {isOpen && (
+              <Logo
+                className={styles.sidebarLogoText}
+                size="md"
+                variant="full"
+              />
+            )}
           </div>
           <button
             className={styles.sidebarToggle}
