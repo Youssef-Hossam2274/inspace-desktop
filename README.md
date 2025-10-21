@@ -64,3 +64,5 @@ This project uses **Vite** for fast development and optimized production builds:
 - **Production**: Optimized bundles with CSS modules and tree shaking
 - **SCSS Modules**: Component-scoped styling with camelCase class names
 - **TypeScript**: Full type safety across the entire application
+
+## License
