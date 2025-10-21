@@ -1,4 +1,4 @@
-# InSpace Desktop
+# inspace-desktop
 
 ## 📑 Idex
 
